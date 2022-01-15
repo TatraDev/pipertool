@@ -1,7 +1,0 @@
-gunicorn
-fastapi
-uvicorn
-aiohttp
-docker
-Jinja2
-pydantic
