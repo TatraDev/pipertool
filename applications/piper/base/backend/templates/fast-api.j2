@@ -1,0 +1,19 @@
+import time
+
+from fastapi import FastAPI, Request
+from piper.base.executors import LocalEnvironment
+
+from executors import {{ executor_class }}, {{ request_model }}, {{ response_model }}
+
+app = FastAPI()
+
+with LocalEnvironment():
+    executor = {{ executor_class }}( {% for k, v in executor_args.items() %} {{ k }}={{ v }}, {% endfor %} )
+
+    @app.post('/{{ function_name }}')
+    async def {{ function_name }}(
+        request_model: {{ request_model }},
+    ):
+        result = await executor.{{ function_name }}(request_model)
+
+        return result.dict()
