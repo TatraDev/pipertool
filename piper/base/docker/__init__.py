@@ -4,7 +4,8 @@ import jinja2
 
 class PythonImage:
 
-    def __init__(self, python_docker_version, cmd):
+    def __init__(self, tag, python_docker_version, cmd):
+        self.tag = tag
         self.python_docker_version = python_docker_version
         self.cmd = cmd
 

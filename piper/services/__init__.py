@@ -13,8 +13,5 @@ class TestMessageAdder(FastAPIExecutor):
         self.appender = appender
         super().__init__(**kwargs)
 
-    def scripts(self):
-        return [__file__]
-
     async def run(self, message: StringValue) -> StringValue:
         return StringValue(value=(message.value + self.appender))

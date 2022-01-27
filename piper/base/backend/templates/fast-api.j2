@@ -1,19 +1,21 @@
 import time
 
 from fastapi import FastAPI, Request
-from piper.base.executors import LocalEnvironment
+from piper.envs import CurrentEnv
 
-from executors import {{ executor_class }}, {{ request_model }}, {{ response_model }}
+{% for script_name in scripts.keys() %}
+from {{ script_name }} import *
+{% endfor %}
 
 app = FastAPI()
 
-with LocalEnvironment():
-    executor = {{ executor_class }}( {% for k, v in executor_args.items() %} {{ k }}={{ v }}, {% endfor %} )
+with CurrentEnv():
+    service = {{ service_class }}( {% for k, v in service_kwargs.items() %} {{ k }}={{ v }}, {% endfor %} )
 
     @app.post('/{{ function_name }}')
     async def {{ function_name }}(
         request_model: {{ request_model }},
     ):
-        result = await executor.{{ function_name }}(request_model)
+        result = await service.{{ function_name }}(request_model)
 
         return result.dict()
