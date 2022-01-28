@@ -12,6 +12,7 @@ from piper.base.docker import PythonImage
 from piper.base.backend.utils import render_fast_api_backend
 from piper.envs import is_docker_env, is_current_env, get_env
 from piper.configurations import get_configuration
+from piper.utils import docker_utils as du
 
 
 class BaseExecutor:
@@ -113,26 +114,33 @@ def run_container(image: str, ports: Dict[int, int]):
 
 
 class FastAPIExecutor(HTTPExecutor):
-    requirements = ["gunicorn", "fastapi", "uvicorn", "aiohttp", "docker", "Jinja2", "pydantic"]
+    requirements = ["gunicorn", "fastapi", "uvicorn", "aiohttp", "docker", "Jinja2", "pydantic", "loguru"]
     base_handler = "run"
 
     def __init__(self, port: int = 8080, **service_kwargs):
         self.container = None
+        self.image_tag = 'piper:latest'
+        self.container_name = "piper_FastAPI"
+
         if is_docker_env():
+            docker_client = docker.DockerClient(base_url='unix://var/run/docker.sock')
             cfg = get_configuration()
-            path = cfg.path
+            project_output_path = cfg.path
 
-            copy_piper(path)
-            copy_scripts(path, self.scripts())
+            copy_piper(project_output_path)
+            copy_scripts(project_output_path, self.scripts())
 
-            self.create_fast_api_files(path, **service_kwargs)
+            self.create_fast_api_files(project_output_path, **service_kwargs)
 
-            image_tag = self.__class__.__name__.lower()
-            docker_image = PythonImage(tag=image_tag,
-                                       python_docker_version="3.9",
-                                       cmd=f"./run.sh")
-            build_image(path, docker_image)
-            self.container = run_container(image_tag, {8080: port})
+            # create and run docker container
+            # if container exits it will be recreated!
+            du.create_image_and_container_by_dockerfile(
+                docker_client,
+                project_output_path,
+                self.image_tag,
+                self.container_name,
+                port
+            )
         else:
             # TODO: Local ENVIRONMENT checks
             pass
