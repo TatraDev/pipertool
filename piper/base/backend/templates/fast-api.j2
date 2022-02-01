@@ -1,13 +1,17 @@
 import time
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, status
 from piper.envs import CurrentEnv
 
 {% for script_name in scripts.keys() %}
 from {{ script_name }} import *
 {% endfor %}
 
-app = FastAPI()
+app = FastAPI(debug=True)
+
+@app.post('/health_check', status_code = status.HTTP_200_OK)
+async def hl():
+    return {"message": "health check"}
 
 with CurrentEnv():
     service = {{ service_class }}( {% for k, v in service_kwargs.items() %} {{ k }}={{ v }}, {% endfor %} )

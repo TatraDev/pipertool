@@ -5,6 +5,7 @@ from typing import Dict
 import inspect
 
 import aiohttp
+from loguru import logger
 import docker
 from pydantic import BaseModel
 
@@ -14,6 +15,8 @@ from piper.envs import is_docker_env, is_current_env, get_env
 from piper.configurations import get_configuration
 from piper.utils import docker_utils as du
 
+import requests
+import sys
 
 class BaseExecutor:
     pass
@@ -56,14 +59,14 @@ class HTTPExecutor(BaseExecutor):
         pass
 
     async def __call__(self, *args, **kwargs):
-        print(get_env())
-        print(is_current_env())
+        print('get_env()', get_env())
+        print('is_current_env()', is_current_env())
         if is_current_env():
             return await self.run(*args, **kwargs)
         else:
             function = "run"
             request_dict = inputs_to_dict(*args, **kwargs)
-            print(request_dict)
+            print('request_dict', request_dict)
             async with aiohttp.ClientSession() as session:
                 async with session.post(f'http://{self.host}:{self.port}/{function}', json=request_dict) as resp:
                     return await resp.json()
@@ -113,6 +116,29 @@ def run_container(image: str, ports: Dict[int, int]):
     return container
 
 
+def wait_for_fast_api_app_start(host, external_port, wait_on_iter, n_iters):
+    '''
+        wait for fast api app will be loaded
+        external_port - 
+        wait_on_iter - seconds between health_check requests
+        n_iters - total health_check requests
+    '''
+    logger.info('waiting for FastAPI app start')
+    i = 0
+    while True:
+        try:
+            r = requests.post(f"http://{host}:{external_port}/health_check/")
+            print(r.status_code, r.reason)
+            if r.status_code == 200:
+                break
+        except Exception as e:
+            time.sleep(wait_on_iter)
+
+        if i == n_iters:
+            logger.error('FastAPI app can`t start or n_iters too small')
+            sys.exit()
+        i += 1
+
 class FastAPIExecutor(HTTPExecutor):
     requirements = ["gunicorn", "fastapi", "uvicorn", "aiohttp", "docker", "Jinja2", "pydantic", "loguru"]
     base_handler = "run"
@@ -141,9 +167,16 @@ class FastAPIExecutor(HTTPExecutor):
                 self.container_name,
                 port
             )
+
+            wait_for_fast_api_app_start('localhost', 8788, 0.5, 10)
         else:
             # TODO: Local ENVIRONMENT checks
             pass
+
+        # a = super().__init__('localhost', port, 'hl')
+        # a.__call__()
+        # print('hl', a)
+
         super().__init__('localhost', port, self.base_handler)
 
     def rm_container(self):

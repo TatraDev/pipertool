@@ -14,7 +14,7 @@ def get_image(docker_client, image_name):
 
 def delete_image(docker_client, image_tag):
     try:
-        result = docker_client.images.remove(image_tag, force=True)
+        docker_client.images.remove(image_tag, force=True)
         return True
     except Exception as e:
         logger.error('error while remove image', e)
@@ -27,32 +27,50 @@ def get_container(docker_client, container_name):
         return cur_container
     except docker.errors.NotFound:
         logger.info(f'container with name {container_name} not found')
-        return None
+        return False
     except Exception as e:
         logger.error(f'non defined exeption {e}')
-        return None
+        return False
 
+def get_container_with_status(docker_client, container_name):
+    try:
+        cur_container = docker_client.containers.get(container_name)
+        if cur_container:
+                status = cur_container.status
+                cont_id = cur_container.id
+                return cur_container, status, cont_id
+    except docker.errors.NotFound:
+        logger.info(f'container with name {container_name} not found')
+        return False
+    except Exception as e:
+        logger.error(f'non defined exeption {e}')
+        return False        
 
 def stop_container(docker_client, container_name):
     try:
         cur_container = docker_client.containers.get(container_name)
-        return cur_container.stop()
+        cur_container.stop()
+        return True
     except docker.errors.NotFound:
         logger.error(f'container for stop with name {container_name} not found')
+        return False
     except docker.errors.APIError:
         logger.error(f'error while stop container {container_name}')
+        return False
 
 
 def remove_container(docker_client, container_name):
     try:
         cur_container = docker_client.containers.get(container_name)
-        return cur_container.remove(v=True, force=True)
+        cur_container.remove(v=True, force=True)
+        return True
     except docker.errors.NotFound:
         logger.error(f'container for stop with name {container_name} not found')
+        return False
     except docker.errors.APIError as de:
         logger.error(f'error while remove container {container_name}')
         logger.error(de)
-        return None
+        return False
 
 
 def stop_and_rm_container(docker_client, container_name):
@@ -60,7 +78,7 @@ def stop_and_rm_container(docker_client, container_name):
     cur_container = get_container(docker_client, container_name)
 
     # get container status
-    if cur_container is None:
+    if not cur_container:
         logger.info(f'container {container_name} not found')
         return 'deleted'
     else:
@@ -74,14 +92,12 @@ def stop_and_rm_container(docker_client, container_name):
         stop_result = stop_container(docker_client, cont_id)
         logger.info('stoped', stop_result)
         status = 'exited'
-        time.sleep(3)
 
     if status == 'exited':
         logger.info(f'container {container_name} exists already. Remove it!')
         # rm
         remove_result = remove_container(docker_client, cont_id)
         logger.info('removed, remove_result is ', remove_result)
-        time.sleep(3)
         status = 'deleted'
     return status
 
@@ -105,8 +121,8 @@ def create_image_and_container_by_dockerfile(docker_client, path, image_tag, con
     status = stop_and_rm_container(docker_client, container_name)
 
     cur_cont = get_container(docker_client, container_name)
-    if cur_cont is not None:
-        logger.error('container not deleted')
+    if cur_cont:
+        logger.error(f'container not deleted, {cur_cont}')
         sys.exit()
 
     # remove image
@@ -125,20 +141,35 @@ def create_image_and_container_by_dockerfile(docker_client, path, image_tag, con
             )
             for log in logs:
                 logger.debug(log)
-            logger.info('image', image)
+            logger.info(f'image {image} created')
 
             # run container
             try:
                 container = docker_client.containers.run(image_tag, name=container_name, detach=True, ports={8080:port})
                 for log in container.logs():
                     logger.debug(log)
-                logger.info('container', container)
-                time.sleep(10)
+                logger.info(f'container {container} created')
+
+                i = 0
+                while True:
+                    i += 1
+                    # logger.info(get_container_with_status(docker_client, container_name))
+                    container.reload()
+                    logger.info(f'container.status {container.status}')
+                    if container.status == 'running':
+                        break
+
+                    if i == 20:
+                        logger.error(f'container {container_name} can`t start, status is {container.status}')
+                        sys.exit()
+                    time.sleep(0.5)
+
+
             except docker.errors.APIError as api_e:
                 logger.error(f'eroror while run container {container_name}')
                 logger.error(str(api_e))
                 sys.exit()
         else:
-            logger.error(f'error while del container')
+            logger.error(f'error while del image {image_tag}')
             sys.exit()
 
