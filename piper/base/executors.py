@@ -68,7 +68,9 @@ class HTTPExecutor(BaseExecutor):
             request_dict = inputs_to_dict(*args, **kwargs)
             print('request_dict', request_dict)
             async with aiohttp.ClientSession() as session:
-                async with session.post(f'http://{self.host}:{self.port}/{function}', json=request_dict) as resp:
+                url = f'http://{self.host}:{self.port}/{function}'
+                logger.info(f'run function with url {url} and data {request_dict}')
+                async with session.post(url, json=request_dict) as resp:
                     return await resp.json()
 
 
