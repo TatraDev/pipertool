@@ -11,6 +11,8 @@ class Configuration:
     wait_on_iter = 0.5
     n_iters = 10
 
+    n_gunicorn_workers = 1
+
 
 def get_configuration():
     return Configuration

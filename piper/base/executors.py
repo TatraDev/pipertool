@@ -1,4 +1,5 @@
 from abc import abstractmethod, ABC
+from distutils.command.config import config
 import os
 import time
 from typing import Dict
@@ -7,10 +8,11 @@ import inspect
 import aiohttp
 from loguru import logger
 import docker
-from pydantic import BaseModel
+from pydantic import BaseModel #, BytesObject, ListOfStringsObject
 
-from piper.base.docker import PythonImage
-from piper.base.backend.utils import render_fast_api_backend
+# from piper.base.docker import PythonImage
+from piper.base.docker import PythonTsrImage
+from piper.base.backend.utils import render_fast_api_backend, render_fast_api_tsrct_backend
 from piper.envs import is_docker_env, is_current_env, get_env
 from piper.configurations import get_configuration
 from piper.utils import docker_utils as du
@@ -157,7 +159,7 @@ class FastAPIExecutor(HTTPExecutor):
 
             copy_piper(project_output_path)
             copy_scripts(project_output_path, self.scripts())
-
+            # build_image(project_output_path, docker_image)
             self.create_fast_api_files(project_output_path, **service_kwargs)
 
             # create and run docker container
@@ -170,14 +172,10 @@ class FastAPIExecutor(HTTPExecutor):
                 port
             )
 
-            wait_for_fast_api_app_start('localhost', 8788, 0.5, 10)
+            wait_for_fast_api_app_start('localhost', cfg.docker_app_port, cfg.wait_on_iter, cfg.n_iters)
         else:
             # TODO: Local ENVIRONMENT checks
             pass
-
-        # a = super().__init__('localhost', port, 'hl')
-        # a.__call__()
-        # print('hl', a)
 
         super().__init__('localhost', port, self.base_handler)
 
@@ -189,6 +187,8 @@ class FastAPIExecutor(HTTPExecutor):
         return {"service": inspect.getfile(self.__class__)}
 
     def create_fast_api_files(self, path: str, **service_kwargs):
+        cfg = get_configuration()
+
         backend = render_fast_api_backend(service_class=self.__class__.__name__,
                                           service_kwargs=dict(service_kwargs),
                                           scripts=self.scripts(),
@@ -202,6 +202,75 @@ class FastAPIExecutor(HTTPExecutor):
         write_requirements(path, self.requirements)
 
         gunicorn = "#!/bin/bash \n" \
-                   "gunicorn -b 0.0.0.0:8080 --workers 4 main:app --worker-class uvicorn.workers.UvicornWorker --preload --timeout 120"
+                   f"gunicorn -b 0.0.0.0:8080 --workers {cfg.n_gunicorn_workers} main:app --worker-class uvicorn.workers.UvicornWorker --preload --timeout 120 --reload=True"
+        with open(f"{path}/run.sh", "w") as output:
+            output.write(gunicorn)
+
+
+class FastAPITesseractExecutor(HTTPExecutor):
+    requirements = ["gunicorn", "fastapi", "uvicorn", "aiohttp", "docker", "Jinja2", "pydantic", "loguru", "numpy", "opencv-python", "Pillow", "pytesseract",  "python-multipart"]
+    base_handler = "recognize"
+
+    def __init__(self, port: int = 8080, **service_kwargs):
+        self.container = None
+        self.image_tag = 'piper:latest'
+        self.container_name = "piper_FastAPITsrct"
+
+        if is_docker_env():
+            docker_client = docker.DockerClient(base_url='unix://var/run/docker.sock')
+            cfg = get_configuration()
+            project_output_path = cfg.path
+
+            copy_piper(project_output_path)
+            copy_scripts(project_output_path, self.scripts())
+
+            docker_image = PythonTsrImage(self.image_tag, "3.9", cmd=f"./run.sh")
+            build_image(project_output_path, docker_image)
+
+            self.create_fast_api_files(project_output_path, **service_kwargs)
+
+            # create and run docker container
+            # if container exits it will be recreated!
+            du.create_image_and_container_by_dockerfile(
+                docker_client,
+                project_output_path,
+                self.image_tag,
+                self.container_name,
+                port
+            )
+
+            wait_for_fast_api_app_start('localhost', cfg.docker_app_port, cfg.wait_on_iter, cfg.n_iters)
+        else:
+            # TODO: Local ENVIRONMENT checks
+            pass
+
+        super().__init__('localhost', port, self.base_handler)
+
+    def rm_container(self):
+        if self.container:
+            self.container.remove(force=True)
+
+    def scripts(self):
+        return {"service": inspect.getfile(self.__class__)}
+
+    def create_fast_api_files(self, path: str, **service_kwargs):
+        cfg = get_configuration()
+
+        backend = render_fast_api_tsrct_backend(
+            service_class=self.__class__.__name__,
+            service_kwargs=dict(service_kwargs),
+            scripts=self.scripts(),
+            function_name=self.base_handler,
+            # request_model="BytesObject",
+            # response_model="ListOfStringsObject"
+        )
+
+        with open(f"{path}/main.py", "w") as output:
+            output.write(backend)
+
+        write_requirements(path, self.requirements)
+
+        gunicorn = "#!/bin/bash \n" \
+                   f"gunicorn -b 0.0.0.0:8080 --workers {cfg.n_gunicorn_workers} main:app --worker-class uvicorn.workers.UvicornWorker --preload --timeout 120"
         with open(f"{path}/run.sh", "w") as output:
             output.write(gunicorn)
