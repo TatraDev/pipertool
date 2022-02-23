@@ -10,11 +10,11 @@
 # TODO: add useful installation links, code coverage and test from CICD
 
 **Piper** is an **open-source** platform for data science and machine
-learning prototyping. Key features:
+learning prototyping. Concentrate only on your goals. Key features:
 
-#. Simple **context-based** experience. Helps to create and deploy pipelines. Does not depend on any proprietary online services.
+#. Simple **python contexts** experience. Helps to create and deploy pipelines. Does not depend on any proprietary online services.
 
-#. Connect each module into a **pipeline**. Run it via docker or virtual environment. Then build whole infrastructure by using venv, Docker or Cloud.
+#. Connect each module into a **pipeline**. Run it via docker or virtual environment. Then build whole **infrastructure** by using venv, Docker or Cloud.
 
 #. Decreases routine and repetitive tasks. Speed up process **from idea to production**.
 
@@ -60,7 +60,7 @@ Comparison to related technologies
 ==================================
 
 #. Data Engineering tools such as `AirFlow <https://airflow.apache.org/>`_,
-   `Luigi <https://github.com/spotify/luigi>`_, and others -
+   `Luigi <https://github.com/spotify/luigi>`_, and others - We use Airflow and Luigi as possible context for executors
 
 #. Opyrator -
 
