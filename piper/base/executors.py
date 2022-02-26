@@ -10,8 +10,8 @@ from loguru import logger
 import docker
 from pydantic import BaseModel #, BytesObject, ListOfStringsObject
 
-# from piper.base.docker import PythonImage
-from piper.base.docker import PythonTsrImage
+from piper.base.docker import PythonImage
+# from piper.base.docker import PythonTesseractImage
 from piper.base.backend.utils import render_fast_api_backend, render_fast_api_tsrct_backend
 from piper.envs import is_docker_env, is_current_env, get_env
 from piper.configurations import get_configuration
@@ -48,6 +48,15 @@ def inputs_to_dict(*args, **kwargs):
     from_kwargs = {k: prepare(v) for k, v in kwargs.items() if is_known(v)}
     from_args.update(from_kwargs)
     return from_args
+
+
+def add_packages_to_install(packages_list):
+    row = f'RUN apt install -y {" ".join(packages_list)} \n' 
+    return row
+
+
+def add_row(row):
+    return f'{row} \n'
 
 
 class HTTPExecutor(BaseExecutor):
@@ -208,7 +217,8 @@ class FastAPIExecutor(HTTPExecutor):
 
 
 class FastAPITesseractExecutor(HTTPExecutor):
-    requirements = ["gunicorn", "fastapi", "uvicorn", "aiohttp", "docker", "Jinja2", "pydantic", "loguru", "numpy", "opencv-python", "Pillow", "pytesseract",  "python-multipart"]
+    requirements = ["gunicorn", "fastapi", "uvicorn", "aiohttp", "docker", "Jinja2", "pydantic", "loguru", "numpy", "opencv-python", "pytesseract",  "python-multipart", "pdf2image"]
+    packages_list = ['tree', 'cmake', 'libgl1-mesa-glx', 'poppler-utils', 'tesseract-ocr', 'libtesseract-dev', 'libleptonica-dev', 'tesseract-ocr-rus', 'mc']
     base_handler = "recognize"
 
     def __init__(self, port: int = 8080, **service_kwargs):
@@ -224,7 +234,14 @@ class FastAPITesseractExecutor(HTTPExecutor):
             copy_piper(project_output_path)
             copy_scripts(project_output_path, self.scripts())
 
-            docker_image = PythonTsrImage(self.image_tag, "3.9", cmd=f"./run.sh")
+            run_rows = ''
+            run_rows += add_row('RUN apt update')
+            run_rows += add_row('RUN apt install -y software-properties-common')
+            run_rows += add_packages_to_install(self.packages_list)
+            run_rows += add_row('RUN pip3 install --upgrade pip')
+
+            # docker_image = PythonTesseractImage(self.image_tag, "3.9", cmd=f"./run.sh")
+            docker_image = PythonImage(self.image_tag, "3.9", cmd=f"./run.sh", template_file='default-python.j2', run_rows=run_rows)
             build_image(project_output_path, docker_image)
 
             self.create_fast_api_files(project_output_path, **service_kwargs)

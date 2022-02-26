@@ -5,7 +5,7 @@ main_app_url = f'http://localhost:8788'
 
 class TestDocker():
     '''
-        класс тестирования API приложения запущщеного в докер контейнере
+        Docker container API test. Methods:
             health_check
             run
     '''
@@ -31,7 +31,7 @@ class TestDocker():
 
 class TestVenv():
     '''
-        класс тестирования приложения в среде venv
+        venv container API test. Methods:
             dummy
     '''
     def test_dummy(self):

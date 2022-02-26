@@ -1,5 +1,7 @@
 FROM python:{{ python_docker_version }}
 
+{{ run_command_lines }}
+
 WORKDIR /app
 
 COPY requirements.txt ./requirements.txt

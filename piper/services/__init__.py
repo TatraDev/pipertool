@@ -30,16 +30,16 @@ class TestMessageAdder(FastAPIExecutor):
 
 
 class TesseractRecognizer(FastAPITesseractExecutor):
+    '''
+        Tesseract OCR implementation service
+    '''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    async def run(self, file_ : BytesObject) -> ListOfStringsObject:
-        print('1')
-        return {1:1}
-        # return tess_utils.file_handler(file_)
+    async def recognize(self, file_content : BytesObject, suf: str) -> ListOfStringsObject:
+        logger.info(f'file_content {type(file_content)}, file suffix is {suf}')
 
-    async def recognize(self, file_content : BytesObject) -> ListOfStringsObject:
-        logger.info(f'file_content {type(file_content)}')
-        text_dict = tu.img_bytes_handler(file_content)
+        text_dict = tu.bytes_handler(file_content, suf)
+        logger.info(f'img_bytes_handler return {type(text_dict)} object')
         return JSONResponse(content=text_dict)
 

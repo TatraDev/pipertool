@@ -92,6 +92,8 @@ def stop_and_rm_container(docker_client, container_name):
         stop_result = stop_container(docker_client, cont_id)
         logger.info('stoped', stop_result)
         status = 'exited'
+    else:
+        logger.info("status not running")
 
     if status == 'exited':
         logger.info(f'container {container_name} exists already. Remove it!')
@@ -99,6 +101,8 @@ def stop_and_rm_container(docker_client, container_name):
         remove_result = remove_container(docker_client, cont_id)
         logger.info('removed, remove_result is ', remove_result)
         status = 'deleted'
+    else:
+        logger.info("status not exited")
     return status
 
 

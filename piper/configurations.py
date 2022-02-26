@@ -13,6 +13,13 @@ class Configuration:
 
     n_gunicorn_workers = 1
 
+    image_suffixes = set(['jpg', 'jpeg', 'png'])
+    pdf_suffixes = set(['pdf'])
+
+    # image to pdf settings
+    thread_count = 4
+    dpi = 160
+
 
 def get_configuration():
     return Configuration
