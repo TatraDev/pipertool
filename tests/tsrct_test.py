@@ -45,15 +45,17 @@ class TestTesseract():
         print((multipart_form_data.get('file')))
                 
         result = requests.post(url, files=multipart_form_data, verify=False)
-        print(result.status_code)
+        print('result.status_code', result.status_code)
         # assert result is None
 
         assert result.status_code == 200
         try:
             data = result.json()
+            print('data', data)
             assert len(data) != 0
         except Exception as e:
             pytest.raises(Exception)
+
 
 
     def test_recognizer_pdf(self):

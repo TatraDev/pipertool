@@ -20,6 +20,10 @@ class Configuration:
     thread_count = 4
     dpi = 160
 
+    # models and where to find them
+    # spacy_model = 'en_core_web_lg'
+    spacy_model = 'en_core_web_sm'
+    model_path = '/app/models'
 
 def get_configuration():
     return Configuration

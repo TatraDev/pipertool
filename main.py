@@ -1,4 +1,4 @@
-from piper.services import TestMessageAdder, StringValue, TesseractRecognizer
+from piper.services import TestMessageAdder, StringValue, TesseractRecognizer, SpacyNER
 from piper.envs import CurrentEnv, DockerEnv
 from piper.configurations import get_configuration
 import time
@@ -27,4 +27,10 @@ if __name__ == '__main__':
     with DockerEnv() as env:
         recognizer = TesseractRecognizer(port=cfg.docker_app_port)
         result = loop.run_until_complete(recognizer())
-        print(result)
+        logger.info(f'result of recognition is {result}')
+
+        sn = SpacyNER()
+        txt = 'The Alraigo Incident occurred on 6th June 1983, when a lost British Royal Navy Sea Harrier fighter aircraft landed on the deck of a Spanish container ship.[1][2] Its pilot, Sub-lieutenant Ian Watson, was a junior Royal Navy Pilot undertaking his first NATO exercise from HMS Illustrious, which was operating off the coast of Portugal. Watson was launched in a pair of aircraft tasked with locating a French aircraft carrier under combat conditions including radio-silence and radar switched off.'
+        result1 = sn.extract_named_ents(txt)
+        result1_str = "\n".join(str(x) for x in result1)
+        logger.info(f'result of NER is {result1_str}')

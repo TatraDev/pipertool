@@ -70,14 +70,14 @@ class HTTPExecutor(BaseExecutor):
         pass
 
     async def __call__(self, *args, **kwargs):
-        print('get_env()', get_env())
-        print('is_current_env()', is_current_env())
+        logger.info(f'get_env() {get_env()}')
+        logger.info(f'is_current_env() {is_current_env()}')
         if is_current_env():
             return await self.run(*args, **kwargs)
         else:
             function = "run"
             request_dict = inputs_to_dict(*args, **kwargs)
-            print('request_dict', request_dict)
+            logger.info(f'request_dict is {request_dict}')
             async with aiohttp.ClientSession() as session:
                 url = f'http://{self.host}:{self.port}/{function}'
                 logger.info(f'run function with url {url} and data {request_dict}')
@@ -114,16 +114,16 @@ def build_image(path: str, docker_image):
                                       quiet=False,
                                       timeout=20)
     for log in logs:
-        print(log)
-    print(image)
+        logger.info(f'executor build_image: {log}')
+    logger.info(f'image is {image}')
 
 
 def run_container(image: str, ports: Dict[int, int]):
     client = docker.DockerClient(base_url='unix://var/run/docker.sock')
     container = client.containers.run(image, detach=True, ports=ports)
     for log in container.logs():
-        print(log)
-    print(container)
+        logger.info(f'executor run_container: {log}')
+    logger.info(f'container is {container}')
     time.sleep(10)
 
     return container
@@ -141,7 +141,7 @@ def wait_for_fast_api_app_start(host, external_port, wait_on_iter, n_iters):
     while True:
         try:
             r = requests.post(f"http://{host}:{external_port}/health_check/")
-            print(r.status_code, r.reason)
+            logger.info(f'health_check status_code:{r.status_code}, reason:{r.reason}')
             if r.status_code == 200:
                 break
         except Exception as e:
@@ -217,8 +217,8 @@ class FastAPIExecutor(HTTPExecutor):
 
 
 class FastAPITesseractExecutor(HTTPExecutor):
-    requirements = ["gunicorn", "fastapi", "uvicorn", "aiohttp", "docker", "Jinja2", "pydantic", "loguru", "numpy", "opencv-python", "pytesseract",  "python-multipart", "pdf2image"]
-    packages_list = ['tree', 'cmake', 'libgl1-mesa-glx', 'poppler-utils', 'tesseract-ocr', 'libtesseract-dev', 'libleptonica-dev', 'tesseract-ocr-rus', 'mc']
+    requirements = ["gunicorn", "fastapi", "uvicorn", "aiohttp", "docker", "Jinja2", "pydantic", "loguru", "numpy", "opencv-python", "pytesseract",  "python-multipart", "pdf2image", "spacy"]
+    packages_list = ['tree', 'cmake', 'libgl1-mesa-glx', 'poppler-utils', 'tesseract-ocr', 'libtesseract-dev', 'libleptonica-dev', 'mc']
     base_handler = "recognize"
 
     def __init__(self, port: int = 8080, **service_kwargs):
@@ -235,13 +235,17 @@ class FastAPITesseractExecutor(HTTPExecutor):
             copy_scripts(project_output_path, self.scripts())
 
             run_rows = ''
-            run_rows += add_row('RUN apt update')
+            run_rows += add_row('RUN apt update && apt install -y apt-transport-https')
             run_rows += add_row('RUN apt install -y software-properties-common')
             run_rows += add_packages_to_install(self.packages_list)
             run_rows += add_row('RUN pip3 install --upgrade pip')
 
+            # скачивает сюда /usr/local/lib/python3.9/site-packages/en_core_web_sm
+            # post_install_lines = f'RUN python3 -m spacy download {cfg.spacy_model} --data-path {cfg.model_path}'
+            post_install_lines = ""
+
             # docker_image = PythonTesseractImage(self.image_tag, "3.9", cmd=f"./run.sh")
-            docker_image = PythonImage(self.image_tag, "3.9", cmd=f"./run.sh", template_file='default-python.j2', run_rows=run_rows)
+            docker_image = PythonImage(self.image_tag, "3.9", cmd=f"./run.sh", template_file='default-python.j2', run_rows=run_rows, post_install_lines=post_install_lines)
             build_image(project_output_path, docker_image)
 
             self.create_fast_api_files(project_output_path, **service_kwargs)
