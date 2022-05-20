@@ -57,24 +57,36 @@ class SpacyNER():
     '''
     def __init__(self):
         cfg = get_configuration()
+        self.available_models = set()
+        self.nlp = None
 
         try:
-            logger.info(f'try to download model {cfg.spacy_model} to {cfg.model_path}')
-            # spacy.util.set_data_path(cfg.model_path)
-            spacy.cli.download(cfg.spacy_model)
+            for cur_model in cfg.spacy_models:
+                logger.info(f'try to download model {cur_model} to {cfg.model_path}')
+                # spacy.util.set_data_path(cfg.model_path)
+                res = spacy.cli.download(cur_model)
+                logger.info(f'result of spacy.cli.download is {res}')
+                self.available_models.add(cur_model)
         except Exception as e:
             logger.error(f'catch exception {e}')
             sys.exit()
 
 
+
+    def set_model(self, cur_model):
+
+        if cur_model not in self.available_models:
+            logger.error(f'there is not {cur_model} in available_models set: {self.available_models}')
+            self.nlp = None
+
         try:
-            nlp = spacy.load(cfg.spacy_model)
+            nlp = spacy.load(cur_model)
             # nlp = spacy.load('en_default')
-            logger.info('spacy nlp object created')
+            logger.info('spacy nlp object created with model {cur_model}')
         except Exception as e:
             logger.error(f'catch exception {e}')
             if isinstance(e, OSError):                
-                logger.error(f'you must download spacy model {cfg.spacy_model}')
+                logger.error(f'you must download spacy model {cur_model}')
             nlp = None
             logger.info('spacy nlp object DID NOT create')
         
@@ -89,3 +101,5 @@ class SpacyNER():
             for ent in doc.ents:
                 res.append((ent.text,  ent.label_))
             return res
+        else:
+            logger.error(f'nlp object didn`t create. you should use set_model(model_name)')

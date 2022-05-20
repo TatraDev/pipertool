@@ -21,8 +21,13 @@ class Configuration:
     dpi = 160
 
     # models and where to find them
-    # spacy_model = 'en_core_web_lg'
-    spacy_model = 'en_core_web_sm'
+    spacy_models = set(
+        [
+            'en_core_web_sm',
+            'en_core_web_lg',
+            'en_core_web_trf'
+        ]
+    )
     model_path = '/app/models'
 
 def get_configuration():
