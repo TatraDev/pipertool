@@ -17,7 +17,7 @@ app.logger = logger
 logger.info(f'main here {time.time()}')
 logger.info(f'Tesseract executor')
 
-@app.post('/health_check', status_code = status.HTTP_200_OK)
+@app.post('/health_check', status_code=status.HTTP_200_OK)
 async def health_check():
     logger.info('health_check request')
     return {"message": "health check"}
@@ -26,6 +26,9 @@ with CurrentEnv():
     logger.info(f'CurrentEnv')
     service = {{ service_class }}( {% for k, v in service_kwargs.items() %} {{ k }}={{ v }}, {% endfor %} )
     logger.info(f'service {service}')
+
+    sn = SpacyNER()
+    logger.info(f'SpacyNER created {sn}')
 
     @app.post('/{{ function_name }}')
     async def {{ function_name }}(file: UploadFile = File(...)):
@@ -37,3 +40,40 @@ with CurrentEnv():
             return result
         except Exception as e:
             logger.error(f'error while parsing File object {e}')
+
+
+    @app.post('/set_config')
+    async def set_config(request: Request):
+        conf = await request.json()
+        logger.info(f'recived config dict {conf}')
+        try:
+            result = await service.sconfig(conf)
+            return result
+        except Exception as e:
+            logger.error(f'error while set config {e}')
+
+    @app.get('/get_ner_models')
+    async def get_ner_models():
+        return {'available_models': sn.available_models}
+
+    @app.post('/set_ner_model')
+    async def set_ner_model(request: Request):
+        model_name = await request.json()
+        try:
+            model_name = model_name.get('model_name')
+            sn.set_model(model_name)
+            return {'message': f'spacy ner model is {model_name} now'}        
+
+        except Exception as e:
+            logger.error(f'error while set config {e}')            
+
+    @app.get('/extract_named_ents')
+    async def extract_named_ents(request: Request):
+        txt = await request.json()
+        try:
+            txt = txt.get('txt')
+            result = sn.extract_named_ents(txt)  
+            return {'result': result}
+        
+        except Exception as e:
+            logger.error(f'error while set config {e}')          

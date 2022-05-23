@@ -20,6 +20,11 @@ class Configuration:
     thread_count = 4
     dpi = 160
 
+    # tesseract options
+    ts_lang = 'eng'
+    ts_config_row = r'--oem 1 --psm 11'
+    ts_config = {'ts_lang': 'eng', 'ts_config_row': r'--oem 1 --psm 11'}
+
     # models and where to find them
     spacy_models = set(
         [

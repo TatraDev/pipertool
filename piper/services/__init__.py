@@ -38,16 +38,42 @@ class TesseractRecognizer(FastAPITesseractExecutor):
     '''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        cfg = get_configuration()
+        self.ts_config = cfg.ts_config
 
+    def set_config_(self, config_):        
+        if 'ts_lang' not in config_.keys():
+            logger.error(f'tesseract config keys must contains ts_lang, keys {config_.keys()}')
+            logger.error(f'tesseract config did not set')
+            return None
+
+        if 'ts_config_row' not in config_.keys():
+            logger.error(f'tesseract config keys must contains ts_config_row, keys {config_.keys()}')
+            logger.error(f'tesseract config did not set')
+            return None
+
+        self.ts_config = config_
+        logger.info(f'tesseract config changed to {config_}')
+
+    async def sconfig(self, conf) -> ListOfStringsObject:
+        # conf = '12'
+        logger.info(f'request to set config to {conf}')
+        self.set_config_(conf)
+        return JSONResponse(content={'text':'OK'})
+    
     async def recognize(self, file_content : BytesObject, suf: str) -> ListOfStringsObject:
         logger.info(f'file_content {type(file_content)}, file suffix is {suf}')
 
-        text_dict = tu.bytes_handler(file_content, suf)
+        logger.info(f'current tesseract config is {self.ts_config}')
+        text_dict = tu.bytes_handler(file_content, suf, self.ts_config)
         logger.info(f'img_bytes_handler return {type(text_dict)} object')
         return JSONResponse(content=text_dict)
 
     async def ner(self, txt: str): 
         sn = SpacyNER()
+        if sn.available_models and len(sn.available_models) > 0:
+            dummy_model = sn.available_models[0]
+            sn.set_model(dummy_model)
         return JSONResponse(content=sn.extract_named_ents(txt))
 
 
@@ -100,6 +126,6 @@ class SpacyNER():
             doc = self.nlp(txt)
             for ent in doc.ents:
                 res.append((ent.text,  ent.label_))
-            return res
+            return JSONResponse(content=res)
         else:
             logger.error(f'nlp object didn`t create. you should use set_model(model_name)')
