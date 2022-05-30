@@ -76,6 +76,11 @@ class TesseractRecognizer(FastAPITesseractExecutor):
             sn.set_model(dummy_model)
         return JSONResponse(content=sn.extract_named_ents(txt))
 
+# class ModelNameNotInList(BaseException):
+#     def __init__(self, msg):
+#         # pass
+#         logger.exception(msg)
+
 
 class SpacyNER():
     '''
@@ -98,14 +103,13 @@ class SpacyNER():
             sys.exit()
 
 
-
     def set_model(self, cur_model):
-
         if cur_model not in self.available_models:
             logger.error(f'there is not {cur_model} in available_models set: {self.available_models}')
             self.nlp = None
+            raise ValueError(f'there is not {cur_model} in available_models set: {self.available_models}')
 
-        try:
+        try:        
             nlp = spacy.load(cur_model)
             # nlp = spacy.load('en_default')
             logger.info('spacy nlp object created with model {cur_model}')
@@ -118,7 +122,7 @@ class SpacyNER():
         
         self.nlp = nlp
 
-    
+
     def extract_named_ents(self, txt: str):
         logger.debug(f'got data type {type(txt)} and data <<{txt}>> for NER')
         if self.nlp:
