@@ -1,0 +1,27 @@
+import argparse
+
+import uvicorn
+from fastapi import FastAPI, Request, status
+
+app = FastAPI()
+
+@app.get("/")
+async def root():
+    return {"message": "Hello World"}
+
+
+@app.post('/health_check', status_code=status.HTTP_200_OK)
+async def hl():
+    return {"message": "health check"}
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("host", type=str)
+    parser.add_argument("port", type=int)
+    args = parser.parse_args()
+    if args.host and args.port:
+        uvicorn.run(app, host=args.host, port=args.port)
+    else:
+        print('No positional arguments in cli')
+        uvicorn.run(app, host='0.0.0.0', port=8080)
