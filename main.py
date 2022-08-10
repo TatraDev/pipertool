@@ -1,11 +1,8 @@
 import asyncio
 
-from loguru import logger
-
 from piper.envs import VirtualEnv
 from piper.services import StringValue, TestMessageAdder
 
-logger.add("file.log", level="INFO")
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()

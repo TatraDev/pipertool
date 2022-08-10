@@ -2,6 +2,8 @@ import os
 
 import jinja2
 
+from piper.utils.logger_utils import logger
+
 
 class VenvPythonImage:
 
@@ -19,8 +21,10 @@ class VenvPythonImage:
 
     def render_venv_bash(self):
         """
-        Render docker template
+        Render bash script for create and activate venv
         """
+        logger.info('Render bash script for create and activate venv')
+
         template_dir = os.path.join(os.path.dirname(__file__), 'templates')
         jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
                                        trim_blocks=True,
@@ -38,6 +42,8 @@ class VenvPythonImage:
         """
         Render main file for virtual env logic
         """
+        logger.info('Render main file for virtual env logic')
+
         template_dir = os.path.join(os.path.dirname(__file__), 'templates')
         jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
                                        trim_blocks=True,

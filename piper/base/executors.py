@@ -8,7 +8,6 @@ from typing import Dict
 import aiohttp
 import docker
 import requests
-from loguru import logger
 from pydantic import BaseModel
 
 from piper.base.backend.utils import render_fast_api_backend
@@ -16,6 +15,7 @@ from piper.base.virtualenv.utils import VenvPythonImage
 from piper.configurations import get_configuration
 from piper.envs import get_env, is_current_env, is_docker_env, is_virtual_env
 from piper.utils import docker_utils as du
+from piper.utils.logger_utils import logger
 
 
 class BaseExecutor:
@@ -150,6 +150,8 @@ class FastAPIExecutor(HTTPExecutor):
         self.container_name = "piper_FastAPI"
 
         if is_docker_env():
+            logger.info('FastAPIExecutor init with is_docker_env()')
+
             docker_client = docker.DockerClient(base_url='unix://var/run/docker.sock')
             cfg = get_configuration()
             project_output_path = cfg.path
@@ -171,6 +173,8 @@ class FastAPIExecutor(HTTPExecutor):
 
             wait_for_fast_api_app_start('localhost', 8788, 0.5, 10)
         elif is_virtual_env():
+            logger.info('FastAPIExecutor init with is_virtual_env()')
+
             cfg = get_configuration()
             project_output_path = cfg.path
             name_venv = cfg.name_venv
@@ -184,7 +188,6 @@ class FastAPIExecutor(HTTPExecutor):
                 name_venv=name_venv,
                 api_host=api_host,
                 api_port=port,
-                **service_kwargs,
             )
 
         # a = super().__init__('localhost', port, 'hl')
@@ -225,8 +228,9 @@ class FastAPIExecutor(HTTPExecutor):
             name_venv: str,
             api_host: str,
             api_port: int,
-            **service_kwargs,
     ):
+        logger.info('FastAPIExecutor create_fast_api_files_venv()')
+
         venv_python_image = VenvPythonImage(
             name_path=path,
             name_venv=name_venv,
@@ -234,9 +238,9 @@ class FastAPIExecutor(HTTPExecutor):
             api_port=api_port,
         )
 
-        backend = venv_python_image.render_venv_python()
+        venv_main = venv_python_image.render_venv_python()
         with open(f"{path}/main.py", "w") as output:
-            output.write(backend)
+            output.write(venv_main)
 
         venv_bash = venv_python_image.render_venv_bash()
         with open(f"{path}/create_venv.sh", "w") as output:
