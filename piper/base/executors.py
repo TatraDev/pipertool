@@ -1,22 +1,22 @@
-from abc import abstractmethod, ABC
-import os
-import time
-from typing import Dict
 import inspect
+import subprocess
+import sys
+import time
+from abc import abstractmethod
+from typing import Dict
 
 import aiohttp
-from loguru import logger
 import docker
+import requests
 from pydantic import BaseModel
 
-from piper.base.docker import PythonImage
 from piper.base.backend.utils import render_fast_api_backend
-from piper.envs import is_docker_env, is_current_env, get_env
+from piper.base.virtualenv.utils import VenvPythonImage
 from piper.configurations import get_configuration
+from piper.envs import get_env, is_current_env, is_docker_env, is_virtual_env
 from piper.utils import docker_utils as du
+from piper.utils.logger_utils import logger
 
-import requests
-import sys
 
 class BaseExecutor:
     pass
@@ -139,6 +139,7 @@ def wait_for_fast_api_app_start(host, external_port, wait_on_iter, n_iters):
             sys.exit()
         i += 1
 
+
 class FastAPIExecutor(HTTPExecutor):
     requirements = ["gunicorn", "fastapi", "uvicorn", "aiohttp", "docker", "Jinja2", "pydantic", "loguru"]
     base_handler = "run"
@@ -149,6 +150,8 @@ class FastAPIExecutor(HTTPExecutor):
         self.container_name = "piper_FastAPI"
 
         if is_docker_env():
+            logger.info('FastAPIExecutor init with is_docker_env()')
+
             docker_client = docker.DockerClient(base_url='unix://var/run/docker.sock')
             cfg = get_configuration()
             project_output_path = cfg.path
@@ -169,9 +172,23 @@ class FastAPIExecutor(HTTPExecutor):
             )
 
             wait_for_fast_api_app_start('localhost', 8788, 0.5, 10)
-        else:
-            # TODO: Local ENVIRONMENT checks
-            pass
+        elif is_virtual_env():
+            logger.info('FastAPIExecutor init with is_virtual_env()')
+
+            cfg = get_configuration()
+            project_output_path = cfg.path
+            name_venv = cfg.name_venv
+            api_host = cfg.api_host
+
+            copy_piper(project_output_path)
+            copy_scripts(project_output_path, self.scripts())
+
+            self.create_fast_api_files_venv(
+                path=project_output_path,
+                name_venv=name_venv,
+                api_host=api_host,
+                api_port=port,
+            )
 
         # a = super().__init__('localhost', port, 'hl')
         # a.__call__()
@@ -200,6 +217,36 @@ class FastAPIExecutor(HTTPExecutor):
         write_requirements(path, self.requirements)
 
         gunicorn = "#!/bin/bash \n" \
-                   "gunicorn -b 0.0.0.0:8080 --workers 4 main:app --worker-class uvicorn.workers.UvicornWorker --preload --timeout 120"
+                   "gunicorn -b 0.0.0.0:8080 --workers 4 main:app --worker-class uvicorn.workers.UvicornWorker " \
+                   "--preload --timeout 120 "
         with open(f"{path}/run.sh", "w") as output:
             output.write(gunicorn)
+
+    def create_fast_api_files_venv(
+            self,
+            path: str,
+            name_venv: str,
+            api_host: str,
+            api_port: int,
+    ):
+        logger.info('FastAPIExecutor create_fast_api_files_venv()')
+
+        venv_python_image = VenvPythonImage(
+            name_path=path,
+            name_venv=name_venv,
+            api_host=api_host,
+            api_port=api_port,
+        )
+
+        venv_main = venv_python_image.render_venv_python()
+        with open(f"{path}/main.py", "w") as output:
+            output.write(venv_main)
+
+        venv_bash = venv_python_image.render_venv_bash()
+        with open(f"{path}/create_venv.sh", "w") as output:
+            output.write(venv_bash)
+
+        write_requirements(path, self.requirements)
+
+        process_chmod = subprocess.run(f'chmod +x {path}create_venv.sh', shell=True)
+        process_run = subprocess.run(f'{path}create_venv.sh', shell=True)

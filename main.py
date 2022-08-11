@@ -1,13 +1,12 @@
-from piper.services import TestMessageAdder, StringValue
-from piper.envs import CurrentEnv
-
 import asyncio
-from loguru import logger
-logger.add("file.log", level="INFO")
+
+from piper.envs import VirtualEnv
+from piper.services import StringValue, TestMessageAdder
+
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
-    with CurrentEnv() as env:
+    with VirtualEnv() as env:
         x = StringValue(value="hello, world")
         adder = TestMessageAdder(appender="!", port=8788)
         result = loop.run_until_complete(adder(x))

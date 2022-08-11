@@ -1,7 +1,9 @@
-import docker
-import time
 import sys
+import time
+
+import docker
 from loguru import logger
+
 
 def get_image(docker_client, image_name):
     try:

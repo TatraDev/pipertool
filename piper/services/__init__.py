@@ -1,6 +1,6 @@
-from piper.base.executors import FastAPIExecutor
-
 from pydantic import BaseModel
+
+from piper.base.executors import FastAPIExecutor
 
 
 class StringValue(BaseModel):
