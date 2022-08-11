@@ -11,7 +11,7 @@ import requests
 from pydantic import BaseModel
 
 from piper.base.backend.utils import render_fast_api_backend
-from piper.base.virtualenv.utils import VenvPythonImage
+from piper.base.virtualenv.utils import VenvPython
 from piper.configurations import get_configuration
 from piper.envs import get_env, is_current_env, is_docker_env, is_virtual_env
 from piper.utils import docker_utils as du
@@ -19,7 +19,8 @@ from piper.utils.logger_utils import logger
 
 
 class BaseExecutor:
-    pass
+    def scripts(self):
+        return {"service": inspect.getfile(self.__class__)}
 
 
 class LocalExecutor:
@@ -172,23 +173,6 @@ class FastAPIExecutor(HTTPExecutor):
             )
 
             wait_for_fast_api_app_start('localhost', 8788, 0.5, 10)
-        elif is_virtual_env():
-            logger.info('FastAPIExecutor init with is_virtual_env()')
-
-            cfg = get_configuration()
-            project_output_path = cfg.path
-            name_venv = cfg.name_venv
-            api_host = cfg.api_host
-
-            copy_piper(project_output_path)
-            copy_scripts(project_output_path, self.scripts())
-
-            self.create_fast_api_files_venv(
-                path=project_output_path,
-                name_venv=name_venv,
-                api_host=api_host,
-                api_port=port,
-            )
 
         # a = super().__init__('localhost', port, 'hl')
         # a.__call__()
@@ -199,9 +183,6 @@ class FastAPIExecutor(HTTPExecutor):
     def rm_container(self):
         if self.container:
             self.container.remove(force=True)
-
-    def scripts(self):
-        return {"service": inspect.getfile(self.__class__)}
 
     def create_fast_api_files(self, path: str, **service_kwargs):
         backend = render_fast_api_backend(service_class=self.__class__.__name__,
@@ -222,20 +203,40 @@ class FastAPIExecutor(HTTPExecutor):
         with open(f"{path}/run.sh", "w") as output:
             output.write(gunicorn)
 
-    def create_fast_api_files_venv(
+
+class VirtualEnvExecutor(BaseExecutor):
+    requirements = ["gunicorn", "fastapi", "uvicorn", "aiohttp", "docker", "Jinja2", "pydantic", "loguru"]
+
+    def __init__(self):
+        if is_virtual_env():
+            logger.info('VirtualEnvExecutor init with is_virtual_env()')
+
+            cfg = get_configuration()
+            project_output_path = cfg.path
+            name_venv = cfg.name_venv
+            number = cfg.number
+
+            copy_piper(project_output_path)
+            copy_scripts(project_output_path, self.scripts())
+
+            self.create_files_for_venv(
+                path=project_output_path,
+                name_venv=name_venv,
+                number=number,
+            )
+
+    def create_files_for_venv(
             self,
             path: str,
             name_venv: str,
-            api_host: str,
-            api_port: int,
+            number: int,
     ):
-        logger.info('FastAPIExecutor create_fast_api_files_venv()')
+        logger.info('VirtualEnvExecutor create_fast_api_files_venv()')
 
-        venv_python_image = VenvPythonImage(
+        venv_python_image = VenvPython(
             name_path=path,
             name_venv=name_venv,
-            api_host=api_host,
-            api_port=api_port,
+            number=number,
         )
 
         venv_main = venv_python_image.render_venv_python()
