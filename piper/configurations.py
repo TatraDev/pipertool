@@ -1,8 +1,9 @@
 class Configuration:
-    path = "/Users/olegsokolov/PycharmProjects/piper/applications"
-    path = "/home/pavel/repo/piper_new_out/"
+    path = "./piper_new_out/"
     piper_path = "piper"
-    default_env = "docker"
+    default_env = "virtualenv"
+    name_venv = "venv_test"
+    api_host = "0.0.0.0"
     env = None
 
 
