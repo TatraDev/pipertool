@@ -1,4 +1,4 @@
-from piper.configurations import get_configuration
+from pipertool.piper.configurations import get_configuration
 
 cfg = get_configuration()
 

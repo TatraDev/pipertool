@@ -2,7 +2,7 @@ import os
 
 import jinja2
 
-from piper.utils.logger_utils import logger
+from pipertool.piper.utils.logger_utils import logger
 
 
 class VenvPythonImage:
