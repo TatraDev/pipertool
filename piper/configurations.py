@@ -3,7 +3,7 @@ class Configuration:
     piper_path = "piper"
     default_env = "virtualenv"
     name_venv = "venv_test"
-    api_host = "0.0.0.0"
+    number = 10
     env = None
 
 

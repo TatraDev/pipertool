@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from piper.base.executors import FastAPIExecutor
+from piper.base.executors import FastAPIExecutor, VirtualEnvExecutor
 
 
 class StringValue(BaseModel):
@@ -15,3 +15,4 @@ class TestMessageAdder(FastAPIExecutor):
 
     async def run(self, message: StringValue) -> StringValue:
         return StringValue(value=(message.value + self.appender))
+
