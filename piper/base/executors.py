@@ -1,4 +1,5 @@
 import inspect
+import os
 import subprocess
 import sys
 import time
@@ -225,6 +226,12 @@ class VirtualEnvExecutor(BaseExecutor):
                 number=number,
             )
 
+            VirtualEnvExecutor.create_files_for_tests(
+                path=project_output_path,
+                name_venv=name_venv,
+                number=number,
+            )
+
     def create_files_for_venv(
             self,
             path: str,
@@ -251,3 +258,35 @@ class VirtualEnvExecutor(BaseExecutor):
 
         process_chmod = subprocess.run(f'chmod +x {path}create_venv.sh', shell=True)
         process_run = subprocess.run(f'{path}create_venv.sh', shell=True)
+
+    @staticmethod
+    def create_files_for_tests(
+            path: str,
+            name_venv: str,
+            number: int,
+    ):
+        logger.info('VirtualEnvExecutor create_files_for_tests()')
+
+        with open(f"{path}/__init__.py", "w") as output:
+            pass
+
+        tests_directory = f"{path}/tests"
+        if not os.path.exists(tests_directory):
+            os.makedirs(tests_directory)
+
+        with open(f"{path}/tests/__init__.py", "w") as output:
+            pass
+
+        venv_python_image = VenvPython(
+            name_path=path,
+            name_venv=name_venv,
+            number=number,
+        )
+
+        test_main = venv_python_image.render_tests_python()
+        with open(f"{path}/tests/test_main.py", "w") as output:
+            output.write(test_main)
+
+        test_bash = venv_python_image.render_tests_bash()
+        with open(f"{path}/test_venv.sh", "w") as output:
+            output.write(test_bash)

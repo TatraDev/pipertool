@@ -47,3 +47,33 @@ class VenvPython:
                                        lstrip_blocks=True)
         template = jinja_env.get_template('python-script-venv.j2')
         return template.render()
+
+    def render_tests_bash(self):
+        """
+        Render bash script for create and activate venv
+        """
+        logger.info('Render bash script for create and activate venv')
+
+        template_dir = os.path.join(os.path.dirname(__file__), 'templates')
+        jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
+                                       trim_blocks=True,
+                                       lstrip_blocks=True)
+        template = jinja_env.get_template('bash-create-tests.j2')
+        return template.render(
+            name_venv=self.name_venv,
+        )
+
+    def render_tests_python(self):
+        """
+        Render bash script for create and activate venv
+        """
+        logger.info('Render bash script for create and activate venv')
+
+        template_dir = os.path.join(os.path.dirname(__file__), 'templates')
+        jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
+                                       trim_blocks=True,
+                                       lstrip_blocks=True)
+        template = jinja_env.get_template('python-script-tests.j2')
+        return template.render(
+            number=self.number,
+        )
