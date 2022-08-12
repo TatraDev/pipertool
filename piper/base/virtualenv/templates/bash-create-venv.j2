@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-NAMEVENV={{ name_path }}/{{ name_venv }}
+NAMEVENV={{ name_path }}{{ name_venv }}
 
 pip3 install virtualenv
 
 python3 -m virtualenv $NAMEVENV
 source $NAMEVENV/bin/activate
 
-pip3 install -r {{ name_path }}/requirements.txt
+pip3 install -r {{ name_path }}requirements.txt
 
-python3 {{ name_path }}/main.py {{ number }}
+python3 {{ name_path }}main.py {{ number }}
