@@ -1,9 +1,4 @@
-import asyncio
-
-from piper.base.executors import VirtualEnvExecutor
 from piper.envs import VirtualEnv
-from piper.services import StringValue, TestMessageAdder
-
 
 # if __name__ == '__main__':
 #     loop = asyncio.get_event_loop()
@@ -21,4 +16,6 @@ from piper.services import StringValue, TestMessageAdder
 
 if __name__ == '__main__':
     with VirtualEnv() as env:
-        adder = VirtualEnvExecutor()
+        env.copy_struct_project()
+        env.create_files_for_venv()
+        env.create_files_for_tests()

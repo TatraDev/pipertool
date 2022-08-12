@@ -1,6 +1,4 @@
 import inspect
-import os
-import subprocess
 import sys
 import time
 from abc import abstractmethod
@@ -12,16 +10,14 @@ import requests
 from pydantic import BaseModel
 
 from piper.base.backend.utils import render_fast_api_backend
-from piper.base.virtualenv.utils import VenvPython
 from piper.configurations import get_configuration
-from piper.envs import get_env, is_current_env, is_docker_env, is_virtual_env
+from piper.envs import get_env, is_current_env, is_docker_env
 from piper.utils import docker_utils as du
 from piper.utils.logger_utils import logger
 
 
 class BaseExecutor:
-    def scripts(self):
-        return {"service": inspect.getfile(self.__class__)}
+    pass
 
 
 class LocalExecutor:
@@ -181,6 +177,9 @@ class FastAPIExecutor(HTTPExecutor):
 
         super().__init__('localhost', port, self.base_handler)
 
+    def scripts(self):
+        return {"service": inspect.getfile(self.__class__)}
+
     def rm_container(self):
         if self.container:
             self.container.remove(force=True)
@@ -203,90 +202,3 @@ class FastAPIExecutor(HTTPExecutor):
                    "--preload --timeout 120 "
         with open(f"{path}/run.sh", "w") as output:
             output.write(gunicorn)
-
-
-class VirtualEnvExecutor(BaseExecutor):
-    requirements = ["gunicorn", "fastapi", "uvicorn", "aiohttp", "docker", "Jinja2", "pydantic", "loguru"]
-
-    def __init__(self):
-        if is_virtual_env():
-            logger.info('VirtualEnvExecutor init with is_virtual_env()')
-
-            cfg = get_configuration()
-            project_output_path = cfg.path
-            name_venv = cfg.name_venv
-            number = cfg.number
-
-            copy_piper(project_output_path)
-            copy_scripts(project_output_path, self.scripts())
-
-            self.create_files_for_venv(
-                path=project_output_path,
-                name_venv=name_venv,
-                number=number,
-            )
-
-            VirtualEnvExecutor.create_files_for_tests(
-                path=project_output_path,
-                name_venv=name_venv,
-                number=number,
-            )
-
-    def create_files_for_venv(
-            self,
-            path: str,
-            name_venv: str,
-            number: int,
-    ):
-        logger.info('VirtualEnvExecutor create_fast_api_files_venv()')
-
-        venv_python_image = VenvPython(
-            name_path=path,
-            name_venv=name_venv,
-            number=number,
-        )
-
-        venv_main = venv_python_image.render_venv_python()
-        with open(f"{path}/main.py", "w") as output:
-            output.write(venv_main)
-
-        venv_bash = venv_python_image.render_venv_bash()
-        with open(f"{path}/create_venv.sh", "w") as output:
-            output.write(venv_bash)
-
-        write_requirements(path, self.requirements)
-
-        process_chmod = subprocess.run(f'chmod +x {path}create_venv.sh', shell=True)
-        process_run = subprocess.run(f'{path}create_venv.sh', shell=True)
-
-    @staticmethod
-    def create_files_for_tests(
-            path: str,
-            name_venv: str,
-            number: int,
-    ):
-        logger.info('VirtualEnvExecutor create_files_for_tests()')
-
-        with open(f"{path}/__init__.py", "w") as output:
-            pass
-
-        tests_directory = f"{path}/tests"
-        if not os.path.exists(tests_directory):
-            os.makedirs(tests_directory)
-
-        with open(f"{path}/tests/__init__.py", "w") as output:
-            pass
-
-        venv_python_image = VenvPython(
-            name_path=path,
-            name_venv=name_venv,
-            number=number,
-        )
-
-        test_main = venv_python_image.render_tests_python()
-        with open(f"{path}/tests/test_main.py", "w") as output:
-            output.write(test_main)
-
-        test_bash = venv_python_image.render_tests_bash()
-        with open(f"{path}/test_venv.sh", "w") as output:
-            output.write(test_bash)
