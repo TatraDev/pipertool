@@ -1,4 +1,6 @@
+from piper.base.virtualenv.venv_executors import VirtualEnvExecutor
 from piper.configurations import get_configuration
+from piper.utils.logger_utils import logger
 
 cfg = get_configuration()
 
@@ -39,21 +41,6 @@ class DockerEnv:
         set_env(self._old_environment)
 
 
-class VirtualEnv:
-
-    def __init__(self):
-        pass
-
-    def __enter__(self):
-        print("Entering VirtualEnv")
-        self._old_environment = get_env()
-        set_env(self)
-
-    def __exit__(self, *args, **kws):
-        print("Exiting VirtualEnv")
-        set_env(self._old_environment)
-
-
 class CurrentEnv:
 
     def __init__(self):
@@ -66,6 +53,22 @@ class CurrentEnv:
 
     def __exit__(self, *args, **kws):
         print("Exiting CurrentEnv")
+        set_env(self._old_environment)
+
+
+class VirtualEnv:
+
+    def __init__(self):
+        self.__resource = VirtualEnvExecutor()
+
+    def __enter__(self):
+        logger.info("Entering VirtualEnv")
+        self._old_environment = get_env()
+        set_env(self)
+        return self.__resource
+
+    def __exit__(self, *args, **kws):
+        logger.info("Exiting VirtualEnv")
         set_env(self._old_environment)
 
 
