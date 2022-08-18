@@ -10,8 +10,8 @@ style = "https://raw.githubusercontent.com/wemake-services/wemake-python-stylegu
 [tool.poetry]
 name = "pipertool"
 description = "Piper is an open-source platform for data science and machine learning prototyping."
-version = "0.1.0"
-license = "APACHE"
+version = "1.0.0"
+license = "Apache License 2.0"
 
 authors = []
 
