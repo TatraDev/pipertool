@@ -10,19 +10,19 @@ style = "https://raw.githubusercontent.com/wemake-services/wemake-python-stylegu
 [tool.poetry]
 name = "pipertool"
 description = "Piper is an open-source platform for data science and machine learning prototyping."
-version = "0.0.1"
+version = "0.0.2"
 license = "Apache License 2.0"
 
 authors = []
 
 readme = "README.md"
 
-repository = "https://github.com/TatraDev/pipertool"
+repository = "https://github.com/TatraDev/pipertool/tree/pipertool_pypi"
 
 keywords = []
 
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 1 - Planning",
   "Intended Audience :: Developers",
   "Operating System :: OS Independent",
   "Topic :: Software Development :: Libraries :: Python Modules",
