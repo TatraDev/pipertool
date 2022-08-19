@@ -1,5 +1,0 @@
-docker
-aiohttp
-Jinja2
-pydantic
-loguru
