@@ -1,6 +1,6 @@
 # pipertool
 
-[![Build Status](https://github.com/TatraDev/pipertool/workflows/test/badge.svg?branch=master&event=push)](https://github.com/TatraDev/pipertool/actions?query=workflow%3Atest)
+[![Build Status](https://github.com/TatraDev/pipertool/workflows/test/badge.svg?branch=pipertool_pypi&event=push)](https://github.com/TatraDev/pipertool/actions?query=workflow%3Atest)
 [![codecov](https://codecov.io/gh/TatraDev/pipertool/branch/master/graph/badge.svg)](https://codecov.io/gh/TatraDev/pipertool)
 [![Python Version](https://img.shields.io/pypi/pyversions/pipertool.svg)](https://pypi.org/project/pipertool/)
 [![wemake-python-styleguide](https://img.shields.io/badge/style-wemake-000000.svg)](https://github.com/wemake-services/wemake-python-styleguide)
