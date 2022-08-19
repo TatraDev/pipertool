@@ -3,11 +3,11 @@ name: test
 on:
   push:
     branches:
-      - master
+      - pipertool_pypi
   pull_request:
   workflow_dispatch:
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
