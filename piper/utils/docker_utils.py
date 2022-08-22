@@ -3,6 +3,10 @@ import time
 import sys
 from loguru import logger
 
+from piper.configurations import get_configuration
+
+cfg = get_configuration()
+
 def get_image(docker_client, image_name):
     try:
         cur_image = docker_client.images.get(image_name)
@@ -163,10 +167,10 @@ def create_image_and_container_by_dockerfile(docker_client, path, image_tag, con
                     if container.status == 'running':
                         break
 
-                    if i == 20:
+                    if i == cfg.docker_n_iters:
                         logger.error(f'container {container_name} can`t start, status is {container.status}')
                         sys.exit()
-                    time.sleep(0.5)
+                    time.sleep(cfg.docker_wait_on_iter)
 
 
             except docker.errors.APIError as api_e:

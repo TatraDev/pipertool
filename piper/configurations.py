@@ -11,6 +11,10 @@ class Configuration:
     wait_on_iter = 0.5
     n_iters = 10
 
+    # docker start time and counter
+    docker_wait_on_iter = 0.5
+    docker_n_iters = 20    
+
     n_gunicorn_workers = 1
 
     image_suffixes = set(['jpg', 'jpeg', 'png'])
