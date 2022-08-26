@@ -180,4 +180,3 @@ def create_image_and_container_by_dockerfile(docker_client, path, image_tag, con
         else:
             logger.error(f'error while del image {image_tag}')
             sys.exit()
-

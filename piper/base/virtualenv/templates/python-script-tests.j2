@@ -1,0 +1,8 @@
+import pytest
+
+from piper_new_out.main import sum_factorial
+
+
+def test_base_func_from_main():
+    res_from_main = sum_factorial({{ number }})
+    assert res_from_main == 4037913
