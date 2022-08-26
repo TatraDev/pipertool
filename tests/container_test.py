@@ -1,16 +1,18 @@
-import docker
+import asyncio
 import os
 import sys
-import asyncio
+
+import docker
+
 root_dir = os.path.join(os.path.realpath(os.path.pardir), 'piper')
 sys.path.insert(1, root_dir)
 
-from piper.utils import docker_utils as du
-from piper.envs import CurrentEnv
-from piper.envs import is_docker_env
-from piper.configurations import get_configuration
 from piper.base.executors import copy_piper, copy_scripts
-from piper.services import TestMessageAdder, StringValue
+from piper.configurations import get_configuration
+from piper.envs import CurrentEnv, is_docker_env
+from piper.services import StringValue, TestMessageAdder
+from piper.utils import docker_utils as du
+
 
 def test_start_container():
     cfg = get_configuration()

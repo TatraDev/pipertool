@@ -1,12 +1,15 @@
-from piper.services import TestMessageAdder, StringValue, TesseractRecognizer, SpacyNER
-from piper.envs import CurrentEnv, DockerEnv, VirtualEnv
-from piper.configurations import get_configuration
-import time
 import asyncio
 import sys
-from piper.utils import tesrct_utils as tu
+import time
 
 from loguru import logger
+
+from piper.configurations import get_configuration
+from piper.envs import CurrentEnv, DockerEnv, VirtualEnv
+# from piper.services import (SpacyNER, StringValue, TesseractRecognizer,
+#                             TestMessageAdder)
+# from piper.utils import tesrct_utils as tu
+
 logger.add("file.log", level="INFO", backtrace=True, diagnose=True, rotation='5 MB')
 
 if __name__ == '__main__':
@@ -24,15 +27,15 @@ if __name__ == '__main__':
     # print(result)
     # adder.rm_container()
 
-    logger.info(f'main here {time.time()}')
-    cfg = get_configuration()
-    loop = asyncio.get_event_loop()
-    with DockerEnv() as env:
-        # object created
-        recognizer = TesseractRecognizer(port=cfg.docker_app_port)
-        
-        result = loop.run_until_complete(recognizer())
-        logger.info(f'result of recognition is {result}')
+    # logger.info(f'main here {time.time()}')
+    # cfg = get_configuration()
+    # loop = asyncio.get_event_loop()
+    # with DockerEnv() as env:
+    #     # object created
+    #     recognizer = TesseractRecognizer(port=cfg.docker_app_port)
+    #
+    #     result = loop.run_until_complete(recognizer())
+    #     logger.info(f'result of recognition is {result}')
 
     with VirtualEnv() as env:
         env.copy_struct_project()

@@ -1,21 +1,22 @@
+import asyncio
 import os
 import sys
-import asyncio
+
 import requests
+
 root_dir = os.path.join(os.path.realpath(os.path.pardir), 'piper')
 sys.path.insert(1, root_dir)
 
-from piper.utils import docker_utils as du
-from piper.utils import tesrct_utils as tu
-
-from piper.envs import DockerEnv
-from piper.envs import is_docker_env
-from piper.configurations import get_configuration
-from piper.services import TesseractRecognizer, StringValue
-from pathlib import Path
 import os
+from pathlib import Path
+
 import pytest
 
+from piper.configurations import get_configuration
+from piper.envs import DockerEnv, is_docker_env
+from piper.services import StringValue, TesseractRecognizer
+from piper.utils import docker_utils as du
+from piper.utils import tesrct_utils as tu
 
 main_app_url = f'http://localhost:8788'
 file_path = Path(__file__).parent
