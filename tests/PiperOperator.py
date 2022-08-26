@@ -1,8 +1,9 @@
-import requests
 import json
 import os
 import sys
 from pprint import pprint
+
+import requests
 from loguru import logger
 
 # root_dir = os.path.realpath(os.path.pardir)
