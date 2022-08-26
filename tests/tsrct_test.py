@@ -21,19 +21,20 @@ from piper.utils import tesrct_utils as tu
 main_app_url = f'http://localhost:8788'
 file_path = Path(__file__).parent
 
+
 # pytest -vs tests/tsrct_test.py::TestTesseract::test_recognizer
-class TestTesseract():
-    '''
+class TestTesseract:
+    """
         Docker container API test. Methods:
             test_recognizer_jpg
             test_recognizer_pdf
             health_check
-    '''
+    """
 
     def test_recognizer_jpg(self):
-        '''
+        """
             jpg file recognize test
-        '''
+        """
         fn = file_path.joinpath('ocr_data.jpg')
         url = f'{main_app_url}/recognize'
 
@@ -49,17 +50,16 @@ class TestTesseract():
         except Exception as e:
             pytest.raises(Exception)
 
-
     def test_recognizer_pdf(self):
-        '''
+        """
             pdf file recognize test
-        '''
+        """
         fn = file_path.joinpath('ocr_data.pdf')
         url = f'{main_app_url}/recognize'
 
         result = tu.send_file_to_service(url, fn)
         print(result.status_code)
-        assert result.status_code == 200        
+        assert result.status_code == 200
         try:
             data = result.json()
             print('data', data)
@@ -67,11 +67,10 @@ class TestTesseract():
         except Exception as e:
             pytest.raises(Exception)
 
-
     def test_health_check(self):
-        '''
+        """
             health check test
-        '''
+        """
         url = f'{main_app_url}/health_check'
         print(url)
         result = requests.post(url)
