@@ -30,7 +30,6 @@ file_path = Path(__file__).parent
 SOURCE_FOLDER = file_path
 OUTPUT_FOLDER = file_path.joinpath('out')
 
-
 if __name__ == '__main__':
     cfg = get_configuration()
 
@@ -43,7 +42,7 @@ if __name__ == '__main__':
     ts_conf = dict()
     ts_conf['ts_lang'] = 'eng'
 
-    for oem in cfg.available_OEM: 
+    for oem in cfg.available_OEM:
         for psm in cfg.available_PSM:
             # change tesseract config
             ts_conf['ts_config_row'] = rf'--oem {oem} --psm {psm}'
