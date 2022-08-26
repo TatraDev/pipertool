@@ -1,9 +1,10 @@
 import cv2
-import pytesseract
 import numpy as np
-from loguru import logger
 import pdf2image
+import pytesseract
 import requests
+from loguru import logger
+
 from piper.configurations import get_configuration
 
 cfg = get_configuration()

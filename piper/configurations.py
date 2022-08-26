@@ -1,7 +1,7 @@
 class Configuration:
-    path = "/Users/olegsokolov/PycharmProjects/piper/applications"
-    path = "/home/pavel/repo/piper_new_out/"
-    test_path = "/home/pavel/repo/piper_test_out/"
+    # path = "/Users/olegsokolov/PycharmProjects/piper/applications"
+    path = "./piper_new_out/"
+    test_path = "./piper_test_out/"
     piper_path = "piper"
     default_env = "docker"
     docker_app_port = 8788
@@ -17,7 +17,7 @@ class Configuration:
 
     # docker start time and counter
     docker_wait_on_iter = 0.5
-    docker_n_iters = 20    
+    docker_n_iters = 20
 
     n_gunicorn_workers = 1
 
@@ -58,8 +58,6 @@ class Configuration:
     ts_config_row = r'--oem 1 --psm 11'
     ts_config = {'ts_lang': 'eng', 'ts_config_row': r'--oem 1 --psm 11'}
 
-    
-
     # models and where to find them
     spacy_models = set(
         [
@@ -69,6 +67,7 @@ class Configuration:
         ]
     )
     model_path = '/app/models'
+
 
 def get_configuration():
     return Configuration

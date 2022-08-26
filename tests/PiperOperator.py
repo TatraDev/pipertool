@@ -1,8 +1,9 @@
-import requests
 import json
 import os
 import sys
 from pprint import pprint
+
+import requests
 from loguru import logger
 
 # root_dir = os.path.realpath(os.path.pardir)
@@ -14,23 +15,23 @@ from loguru import logger
 HEADERS = {"Content-Type": "application/json"}
 NER_RESPONSE_KEY = 'body'
 
+
 class PiperOperatorException(BaseException):
     def __init__(self, msg):
         pass
         # logger.exception(msg)
-    
 
 
 class FileLoadException(PiperOperatorException):
     def __init__(self, fn):
         self.fn = fn
-        super().__init__(f'file {fn} can`t be loaded')    
+        super().__init__(f'file {fn} can`t be loaded')
 
 
 class JSONGetKeyException(PiperOperatorException):
     def __init__(self, key):
         self.key = key
-        super().__init__(f'can`t get JSON key {key}')    
+        super().__init__(f'can`t get JSON key {key}')
 
 
 class NoAvailableModelsException(PiperOperatorException):
@@ -45,7 +46,8 @@ def get_data_by_key_from_response(cur_response, k):
     v = j.get(k)
     return v
 
-def get_data_by_key_from_url(url, key, post=True, data=None, file_name=""):    
+
+def get_data_by_key_from_url(url, key, post=True, data=None, file_name=""):
     try:
         if post:
             if file_name:
@@ -67,7 +69,7 @@ def get_data_by_key_from_url(url, key, post=True, data=None, file_name=""):
                 return val
             else:
                 return cur_response
-            
+
         else:
             cur_response = requests.get(url, headers=HEADERS, data=data)
             cur_response.raise_for_status()
@@ -82,7 +84,7 @@ def get_data_by_key_from_url(url, key, post=True, data=None, file_name=""):
         logger.exception(f'can`t get key from response: {cjke}')
 
     except Exception as e:
-        logger.exception(f'error while processing url {url}: {e}') 
+        logger.exception(f'error while processing url {url}: {e}')
 
 
 class PiperNLPWorker():
@@ -105,15 +107,14 @@ class PiperNLPWorker():
         # get named entitys from text url
         self.url_spacy_get_NE = f'{self.base_url}/extract_named_ents'
 
-
     def get_available_ner_models(self):
         return get_data_by_key_from_url(self.url_spacy_all_models, 'available_models', post=False)
 
     def set_current_spacy_model(self, model):
-        return get_data_by_key_from_url(self.url_spacy_set_model, '', post=True, data=json.dumps({'model_name':model}))
+        return get_data_by_key_from_url(self.url_spacy_set_model, '', post=True, data=json.dumps({'model_name': model}))
 
     def get_named_ent_from_text(self, txt):
-        resp = get_data_by_key_from_url(self.url_spacy_get_NE, 'result', post=False, data=json.dumps({'txt':txt}))
+        resp = get_data_by_key_from_url(self.url_spacy_get_NE, 'result', post=False, data=json.dumps({'txt': txt}))
         logger.debug(f'url is {resp}, response is {resp}')
         if NER_RESPONSE_KEY in resp.keys():
             named_ents = resp.get(NER_RESPONSE_KEY)
@@ -137,9 +138,9 @@ class PiperNLPWorker():
     def set_tesseract_config(self, conf):
         return get_data_by_key_from_url(self.url_tsrct_cfg, '', post=True, data=json.dumps(conf))
 
+
 if __name__ == '__main__':
     piper_worker = PiperNLPWorker('http://localhost:8788')
-    
 
     amodels = piper_worker.get_available_ner_models()
     print('all models', amodels)
@@ -161,10 +162,8 @@ if __name__ == '__main__':
         logger.exception(e)
     # pprint(resp)
 
-
     txt = piper_worker.get_text_from_file('/home/pavel/repo/piper_new/piper/tests/ocr_data.pdf')
     logger.info(f'txt {txt}')
-
 
     ts_conf = dict()
     ts_conf['ts_lang'] = 'eng'
@@ -172,5 +171,3 @@ if __name__ == '__main__':
 
     resp = piper_worker.set_tesseract_config(ts_conf)
     logger.info(resp)
-    
-    

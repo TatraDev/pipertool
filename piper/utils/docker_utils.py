@@ -1,6 +1,7 @@
-import docker
-import time
 import sys
+import time
+
+import docker
 from loguru import logger
 
 from piper.configurations import get_configuration

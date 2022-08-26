@@ -1,23 +1,24 @@
+import asyncio
 import os
 import sys
-import asyncio
+
 import requests
+
 root_dir = os.path.join(os.path.realpath(os.path.pardir), 'piper')
 sys.path.insert(1, root_dir)
 
+import json
+import os
+from pathlib import Path
+
+import pytest
+from PiperOperator import *
+
+from piper.configurations import get_configuration
+from piper.envs import DockerEnv, is_docker_env
+from piper.services import StringValue, TesseractRecognizer
 from piper.utils import docker_utils as du
 from piper.utils import tesrct_utils as tu
-
-from piper.envs import DockerEnv
-from piper.envs import is_docker_env
-from piper.configurations import get_configuration
-from piper.services import TesseractRecognizer, StringValue
-from pathlib import Path
-import os
-import pytest
-import json
-
-from PiperOperator import *
 
 # service url
 main_app_url = f'http://localhost:8788'
@@ -28,7 +29,6 @@ file_path = Path(__file__).parent
 
 SOURCE_FOLDER = file_path
 OUTPUT_FOLDER = file_path.joinpath('out')
-
 
 if __name__ == '__main__':
     cfg = get_configuration()
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     ts_conf = dict()
     ts_conf['ts_lang'] = 'eng'
 
-    for oem in cfg.available_OEM: 
+    for oem in cfg.available_OEM:
         for psm in cfg.available_PSM:
             # change tesseract config
             ts_conf['ts_config_row'] = rf'--oem {oem} --psm {psm}'

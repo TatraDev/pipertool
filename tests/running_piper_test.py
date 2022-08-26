@@ -1,14 +1,24 @@
 # pytest -vs tests/running_piper_test.py::TestDocker
+from pathlib import Path
+from shlex import split
+from subprocess import check_call
+from tempfile import TemporaryDirectory
+from venv import create
+
 import requests
+
+from piper.envs import VirtualEnv
 
 main_app_url = f'http://localhost:8788'
 
-class TestDocker():
-    '''
+
+class TestDocker:
+    """
         Docker container API test. Methods:
             health_check
             run
-    '''
+    """
+
     def test_health_check(self):
         url = f'{main_app_url}/health_check'
         print(url)
@@ -29,10 +39,13 @@ class TestDocker():
         assert need_result == result.get('value')
 
 
-class TestVenv():
-    '''
+class TestVenv:
+    """
         venv container API test. Methods:
             dummy
-    '''
+    """
     def test_dummy(self):
-        assert 1 / 0
+        with VirtualEnv() as env:
+            env.copy_struct_project()
+            env.create_files_for_venv()
+            env.create_files_for_tests()
