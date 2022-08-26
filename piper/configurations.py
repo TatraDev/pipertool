@@ -5,6 +5,10 @@ class Configuration:
     piper_path = "piper"
     default_env = "docker"
     docker_app_port = 8788
+
+    name_venv = "venv_test"
+    number = 10
+
     env = None
 
     # start time and counter

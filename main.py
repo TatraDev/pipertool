@@ -1,5 +1,5 @@
 from piper.services import TestMessageAdder, StringValue, TesseractRecognizer, SpacyNER
-from piper.envs import CurrentEnv, DockerEnv
+from piper.envs import CurrentEnv, DockerEnv, VirtualEnv
 from piper.configurations import get_configuration
 import time
 import asyncio
@@ -34,6 +34,11 @@ if __name__ == '__main__':
         result = loop.run_until_complete(recognizer())
         logger.info(f'result of recognition is {result}')
 
+    with VirtualEnv() as env:
+        env.copy_struct_project()
+        env.create_files_for_venv()
+        env.create_files_for_tests()
+        
         # sys.exit()
 
         # sn = SpacyNER()
