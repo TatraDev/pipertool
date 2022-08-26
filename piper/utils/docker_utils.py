@@ -1,9 +1,11 @@
-import sys
-import time
-
 import docker
+import time
+import sys
 from loguru import logger
 
+from piper.configurations import get_configuration
+
+cfg = get_configuration()
 
 def get_image(docker_client, image_name):
     try:
@@ -94,6 +96,8 @@ def stop_and_rm_container(docker_client, container_name):
         stop_result = stop_container(docker_client, cont_id)
         logger.info('stoped', stop_result)
         status = 'exited'
+    else:
+        logger.info("status not running")
 
     if status == 'exited':
         logger.info(f'container {container_name} exists already. Remove it!')
@@ -101,6 +105,8 @@ def stop_and_rm_container(docker_client, container_name):
         remove_result = remove_container(docker_client, cont_id)
         logger.info('removed, remove_result is ', remove_result)
         status = 'deleted'
+    else:
+        logger.info("status not exited")
     return status
 
 
@@ -161,10 +167,10 @@ def create_image_and_container_by_dockerfile(docker_client, path, image_tag, con
                     if container.status == 'running':
                         break
 
-                    if i == 20:
+                    if i == cfg.docker_n_iters:
                         logger.error(f'container {container_name} can`t start, status is {container.status}')
                         sys.exit()
-                    time.sleep(0.5)
+                    time.sleep(cfg.docker_wait_on_iter)
 
 
             except docker.errors.APIError as api_e:
@@ -174,4 +180,3 @@ def create_image_and_container_by_dockerfile(docker_client, path, image_tag, con
         else:
             logger.error(f'error while del image {image_tag}')
             sys.exit()
-

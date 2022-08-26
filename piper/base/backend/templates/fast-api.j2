@@ -10,7 +10,7 @@ from {{ script_name }} import *
 app = FastAPI(debug=True)
 
 @app.post('/health_check', status_code = status.HTTP_200_OK)
-async def hl():
+async def health_check():
     return {"message": "health check"}
 
 with CurrentEnv():
