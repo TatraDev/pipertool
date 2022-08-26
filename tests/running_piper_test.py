@@ -1,4 +1,10 @@
 # pytest -vs tests/running_piper_test.py::TestDocker
+from pathlib import Path
+from shlex import split
+from subprocess import check_call
+from tempfile import TemporaryDirectory
+from venv import create
+
 import requests
 
 from piper.envs import VirtualEnv
@@ -38,8 +44,8 @@ class TestVenv:
         venv container API test. Methods:
             dummy
     """
-
-    with VirtualEnv() as env:
-        env.copy_struct_project()
-        env.create_files_for_venv()
-        env.create_files_for_tests()
+    def test_dummy(self):
+        with VirtualEnv() as env:
+            env.copy_struct_project()
+            env.create_files_for_venv()
+            env.create_files_for_tests()
