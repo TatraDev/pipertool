@@ -1,3 +1,5 @@
+from base.docker_compose.compose_executors import ComposeExecutor
+
 from piper.base.virtualenv.venv_executors import VirtualEnvExecutor
 from piper.configurations import get_configuration
 from piper.utils.logger_utils import logger
@@ -10,6 +12,8 @@ def init_default_env():
     if cfg.default_env == "docker":
         set_env(DockerEnv())
     elif cfg.default_env == "virtualenv":
+        set_env(VirtualEnv())
+    elif cfg.default_env == "compose":
         set_env(VirtualEnv())
     else:
         set_env(CurrentEnv())
@@ -72,6 +76,23 @@ class VirtualEnv:
         set_env(self._old_environment)
 
 
+class ComposeEnv:
+
+    def __init__(self):
+        self.__resource = ComposeExecutor()
+
+    def __enter__(self):
+        logger.info("Entering ComposeEnv")
+        self._old_environment = get_env()
+        set_env(self)
+        return self.__resource
+
+    def __exit__(self, *args, **kws):
+        logger.info("Exiting ComposeEnv")
+        # self.__resource.stop_compose()
+        set_env(self._old_environment)
+
+
 def is_current_env():
     return get_env().__class__.__name__ == "CurrentEnv"
 
@@ -82,3 +103,7 @@ def is_docker_env():
 
 def is_virtual_env():
     return get_env().__class__.__name__ == "VirtualEnv"
+
+
+def is_compose_env():
+    return get_env().__class__.__name__ == "ComposeEnv"
