@@ -1,11 +1,8 @@
 import inspect
-import os
 import subprocess
 from typing import Dict
 
-from base.docker_compose.utils import ComposeServices
-
-from piper.base.virtualenv.utils import VenvPython
+from piper.base.docker_compose.utils import ComposeServices
 from piper.configurations import get_configuration
 from piper.utils.logger_utils import logger
 
