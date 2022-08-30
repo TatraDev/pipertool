@@ -1,17 +1,10 @@
 import time
-
 from typing import Union
 
 import numpy as np
-
 from fastapi import FastAPI
-from pymilvus import (
-    connections,
-    utility,
-    FieldSchema, CollectionSchema, DataType,
-    Collection,
-)
-
+from pymilvus import (Collection, CollectionSchema, DataType, FieldSchema,
+                      connections, utility)
 
 app = FastAPI(
     docs_url='/',
