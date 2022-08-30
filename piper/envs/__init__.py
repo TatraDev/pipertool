@@ -1,5 +1,4 @@
-from base.docker_compose.compose_executors import ComposeExecutor
-
+from piper.base.docker_compose.compose_executors import ComposeExecutor
 from piper.base.virtualenv.venv_executors import VirtualEnvExecutor
 from piper.configurations import get_configuration
 from piper.utils.logger_utils import logger
