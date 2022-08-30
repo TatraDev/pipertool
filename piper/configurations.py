@@ -9,7 +9,7 @@ class Configuration:
     name_venv = "venv_test"
     number = 10
 
-    env = None
+    env = 'compose'
 
     # start time and counter
     wait_on_iter = 0.5
