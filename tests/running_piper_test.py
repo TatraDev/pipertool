@@ -7,7 +7,7 @@ from venv import create
 
 import requests
 
-from piper.envs import VirtualEnv
+from piper.envs import VirtualEnv, ComposeEnv
 
 main_app_url = f'http://localhost:8788'
 
@@ -39,13 +39,21 @@ class TestDocker:
         assert need_result == result.get('value')
 
 
-class TestVenv:
+class TestDifferentEnv:
     """
-        venv container API test. Methods:
-            dummy
+        Compose and Venv test. Methods:
+            test_scenario_venv
+            test_scenario_compose
     """
-    def test_dummy(self):
+    def test_scenario_venv(self):
         with VirtualEnv() as env:
             env.copy_struct_project()
             env.create_files_for_venv()
             env.create_files_for_tests()
+
+    def test_scenario_compose(self):
+        with ComposeEnv() as compose:
+            compose.copy_struct_project()
+            compose.create_files_for_compose()
+            compose.start_compose()
+            compose.stop_compose()
