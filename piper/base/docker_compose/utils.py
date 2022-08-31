@@ -16,7 +16,7 @@ class ComposeServices:
     @staticmethod
     def render_script_fastapi():
         """
-        Render main file for virtual env logic
+        Render main file for fastapi
         """
         logger.info('Render main file for fastapi in compose services')
 
@@ -29,7 +29,7 @@ class ComposeServices:
 
     def render_bash_start(self):
         """
-        Render bash script for create and activate venv
+        Render bash script for bash_start
         """
         logger.info('Render bash script for create and activate venv')
 
@@ -44,7 +44,7 @@ class ComposeServices:
 
     def render_bash_stop(self):
         """
-        Render main file for virtual env logic
+        Render bash script for bash_stop
         """
         logger.info('Render main file for virtual env logic')
 
@@ -60,7 +60,7 @@ class ComposeServices:
     @staticmethod
     def render_compose_services():
         """
-        Render bash script for create and activate venv
+        Render script for compose_services
         """
         logger.info('Render bash script for create and activate venv')
 
@@ -74,7 +74,7 @@ class ComposeServices:
     @staticmethod
     def render_dockerfile():
         """
-        Render bash script for create and activate venv
+        Render dockerfile
         """
         logger.info('Render bash script for create and activate venv')
 

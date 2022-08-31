@@ -1,4 +1,5 @@
 # pytest -vs tests/running_piper_test.py::TestDocker
+import time
 from pathlib import Path
 from shlex import split
 from subprocess import check_call
@@ -64,7 +65,8 @@ class TestCompose:
             compose.create_files_for_compose()
             compose.start_compose()
 
-            url = 'http://localhost:7585/health_check'
+            time.sleep(5)
+            url = 'http://127.0.0.1:7585/health_check'
             result = requests.get(url)
             assert result.status_code == 200
 
