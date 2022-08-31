@@ -2,7 +2,7 @@ import time
 from typing import Union
 
 import numpy as np
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from pymilvus import (Collection, CollectionSchema, DataType, FieldSchema,
                       connections, utility)
 
@@ -36,6 +36,11 @@ num_entities, dim = 3000, 8
 # Note: the `using` parameter of the following methods is default to "default".
 print(fmt.format("start connecting to Milvus"))
 connections.connect("default", host="standalone", port="19530")
+
+
+@app.get("/health_check", status_code=200)
+def health_check():
+    return 'Success'
 
 
 @app.get("/has_collection")

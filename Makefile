@@ -6,7 +6,7 @@ lint:
 
 .PHONY: unit
 unit:
-	pytest -vs tests/running_piper_test.py::TestDifferentEnv
+	pytest -vs tests/running_piper_test.py::TestCompose
 
 .PHONY: package
 package:

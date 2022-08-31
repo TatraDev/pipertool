@@ -39,21 +39,34 @@ class TestDocker:
         assert need_result == result.get('value')
 
 
-class TestDifferentEnv:
+class TestVenv:
     """
-        Compose and Venv test. Methods:
-            test_scenario_venv
-            test_scenario_compose
+        venv test. Methods:
+            scenario
     """
-    def test_scenario_venv(self):
+
+    def test_scenario(self):
         with VirtualEnv() as env:
             env.copy_struct_project()
             env.create_files_for_venv()
             env.create_files_for_tests()
 
-    def test_scenario_compose(self):
+
+class TestCompose:
+    """
+        Compose test. Methods:
+            scenario
+    """
+
+    def test_health_check(self):
         with ComposeEnv() as compose:
             compose.copy_struct_project()
             compose.create_files_for_compose()
             compose.start_compose()
+
+            url = 'http://localhost:7585/health_check'
+            result = requests.get(url)
+            assert result.status_code == 200
+
             compose.stop_compose()
+
