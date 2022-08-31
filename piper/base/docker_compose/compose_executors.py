@@ -41,30 +41,30 @@ class ComposeExecutor:
         copy_piper(self.project_output_path)
         copy_scripts(self.project_output_path, self.scripts())
 
-    def create_files_for_compose(self):
+    def create_files_for_compose(self, testing: bool = False):
         logger.info('ComposeExecutor create_fast_api_files_venv()')
 
-        venv_python_image = ComposeServices(
+        compose_service = ComposeServices(
             name_path=self.project_output_path,
         )
 
-        main_fastapi = venv_python_image.render_script_fastapi()
+        main_fastapi = compose_service.render_script_fastapi()
         with open(f"{self.project_output_path}/main.py", "w") as output:
             output.write(main_fastapi)
 
-        docker_compose = venv_python_image.render_compose_services()
+        docker_compose = compose_service.render_compose_services()
         with open(f"{self.project_output_path}/docker-compose.yaml", "w") as output:
             output.write(docker_compose)
 
-        bash_start = venv_python_image.render_bash_start()
+        bash_start = compose_service.render_bash_start(testing=testing)
         with open(f"{self.project_output_path}/bash-start.sh", "w") as output:
             output.write(bash_start)
 
-        bash_stop = venv_python_image.render_bash_stop()
+        bash_stop = compose_service.render_bash_stop()
         with open(f"{self.project_output_path}/bash-stop.sh", "w") as output:
             output.write(bash_stop)
 
-        dockerfile = venv_python_image.render_dockerfile()
+        dockerfile = compose_service.render_dockerfile()
         with open(f"{self.project_output_path}/Dockerfile", "w") as output:
             output.write(dockerfile)
 
