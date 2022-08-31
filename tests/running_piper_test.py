@@ -62,7 +62,7 @@ class TestCompose:
     def test_health_check(self):
         with ComposeEnv() as compose:
             compose.copy_struct_project()
-            compose.create_files_for_compose()
+            compose.create_files_for_compose(testing=True)
             compose.start_compose()
 
             time.sleep(5)

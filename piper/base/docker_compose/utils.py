@@ -27,7 +27,7 @@ class ComposeServices:
         template = jinja_env.get_template('python-script-fastapi.j2')
         return template.render()
 
-    def render_bash_start(self):
+    def render_bash_start(self, testing: bool = False):
         """
         Render bash script for bash_start
         """
@@ -38,8 +38,11 @@ class ComposeServices:
                                        trim_blocks=True,
                                        lstrip_blocks=True)
         template = jinja_env.get_template('bash-start-compose.j2')
+
+        compose_flag = '-d' if testing else ''
         return template.render(
             name_path=self.name_path,
+            compose_flag=compose_flag,
         )
 
     def render_bash_stop(self):

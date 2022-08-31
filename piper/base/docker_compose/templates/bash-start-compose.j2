@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-docker-compose -f {{ name_path }}docker-compose.yaml up --build -d
+docker-compose -f {{ name_path }}docker-compose.yaml up --build {{ compose_flag }}
