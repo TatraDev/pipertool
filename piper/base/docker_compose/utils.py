@@ -31,7 +31,7 @@ class ComposeServices:
         """
         Render bash script for bash_start
         """
-        logger.info('Render bash script for create and activate venv')
+        logger.info('Render bash script for bash_start')
 
         template_dir = os.path.join(os.path.dirname(__file__), 'templates')
         jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
@@ -39,7 +39,7 @@ class ComposeServices:
                                        lstrip_blocks=True)
         template = jinja_env.get_template('bash-start-compose.j2')
 
-        compose_flag = '-d' if testing else ''
+        compose_flag = '' if testing else '-d'
         return template.render(
             name_path=self.name_path,
             compose_flag=compose_flag,
@@ -49,7 +49,7 @@ class ComposeServices:
         """
         Render bash script for bash_stop
         """
-        logger.info('Render main file for virtual env logic')
+        logger.info('Render bash script for bash_stop')
 
         template_dir = os.path.join(os.path.dirname(__file__), 'templates')
         jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
@@ -65,7 +65,7 @@ class ComposeServices:
         """
         Render script for compose_services
         """
-        logger.info('Render bash script for create and activate venv')
+        logger.info('Render script for compose_services')
 
         template_dir = os.path.join(os.path.dirname(__file__), 'templates')
         jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
@@ -79,7 +79,7 @@ class ComposeServices:
         """
         Render dockerfile
         """
-        logger.info('Render bash script for create and activate venv')
+        logger.info('Render dockerfile')
 
         template_dir = os.path.join(os.path.dirname(__file__), 'templates')
         jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
