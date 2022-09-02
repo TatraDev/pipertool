@@ -1,8 +1,8 @@
 class Configuration:
     # path = "/Users/olegsokolov/PycharmProjects/piper/applications"
-    path = "/home/artems/PycharmProjects/pipertool/piper_new_out/"
+    path = "./piper_new_out/"
     test_path = "./piper_test_out/"
-    piper_path = "."
+    piper_path = "piper"
     default_env = "docker"
     docker_app_port = 8788
 
