@@ -43,13 +43,13 @@ In root directory project run command in terminal
 
 - python setup.py install
 
-- piper start
+- piper --env-type compose start
 
 - 0.0.0.0:7585 - FastApi
 
 - 0.0.0.0:9001 - Milvus Console (minioadmin/minioadmin)
 
-- piper stop
+- piper --env-type compose stop
 
 - pip uninstall piper
 
