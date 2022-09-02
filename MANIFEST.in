@@ -1,2 +1,4 @@
-include Readme.rst
+include piper/base/backend/templates/*.j2
+include piper/base/docker/images/*.j2
 include piper/base/docker_compose/templates/*.j2
+include piper/base/virtualenv/templates/*.j2
