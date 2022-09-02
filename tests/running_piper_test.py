@@ -8,7 +8,7 @@ from venv import create
 
 import requests
 
-from piper.envs import VirtualEnv, ComposeEnv
+from piper.envs import ComposeEnv, VirtualEnv
 
 main_app_url = f'http://localhost:8788'
 

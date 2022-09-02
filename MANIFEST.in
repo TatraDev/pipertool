@@ -1,0 +1,2 @@
+include Readme.rst
+include piper/base/docker_compose/templates/*.j2

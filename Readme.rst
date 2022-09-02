@@ -34,6 +34,24 @@ How Piper works
 
 Quick start
 ===========
+Easy test pipertool package
+
+In root directory project run command in terminal
+- create and activate venv
+
+- in configuration.py rename for correctly path for new directory
+
+- python setup.py install
+
+- piper start
+
+- 0.0.0.0:7585 - FastApi
+
+- 0.0.0.0:9001 - Milvus Console (minioadmin/minioadmin)
+
+- piper stop
+
+- pip uninstall piper
 
 
 Installation
