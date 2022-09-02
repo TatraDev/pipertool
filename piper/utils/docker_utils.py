@@ -2,9 +2,8 @@ import sys
 import time
 
 import docker
+from configurations import get_configuration
 from loguru import logger
-
-from piper.configurations import get_configuration
 
 cfg = get_configuration()
 
