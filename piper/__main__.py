@@ -1,24 +1,8 @@
-import os
 import sys
 
 import click
 
-root_dir = os.path.join(os.path.realpath(os.path.pardir), '.')
-sys.path.insert(1, root_dir)
-
 from piper.envs import ComposeEnv
-
-# def main():
-#     with ComposeEnv() as env:
-#         try:
-#             env.copy_struct_project()
-#             env.create_files_for_compose()
-#             env.start_compose()
-#         except KeyboardInterrupt:
-#             logger.info('Ctrl+C pressed. Except KeyboardInterrupt.')
-#             env.stop_compose()
-#             sys.exit(1)
-#
 
 
 @click.command()
