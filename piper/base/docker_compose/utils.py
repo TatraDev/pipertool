@@ -24,7 +24,7 @@ class ComposeServices:
         jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
                                        trim_blocks=True,
                                        lstrip_blocks=True)
-        template = jinja_env.get_template('python-script-fastapi.j2')
+        template = jinja_env.get_template('python-fastapi-milvus.j2')
         return template.render()
 
     def render_bash_start(self, testing: bool = False):
