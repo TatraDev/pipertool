@@ -9,6 +9,11 @@
 
 # TODO: add useful installation links, code coverage and test from CICD
 
+[![Build Status](https://github.com/TatraDev/pipertool/workflows/test/badge.svg?branch=venv_logic&event=push)](https://github.com/TatraDev/pipertool/actions?query=workflow%3Atest)
+[![codecov](https://codecov.io/gh/TatraDev/pipertool/branch/master/graph/badge.svg)](https://codecov.io/gh/TatraDev/pipertool)
+[![Python Version](https://img.shields.io/pypi/pyversions/pipertool.svg)](https://pypi.org/project/pipertool/)
+[![wemake-python-styleguide](https://img.shields.io/badge/style-wemake-000000.svg)](https://github.com/wemake-services/wemake-python-styleguide)
+
 **Piper** is an **open-source** platform for data science and machine
 learning prototyping. Concentrate only on your goals. Key features:
 
