@@ -50,6 +50,13 @@ def has_collection(name_collect: str = "hello_milvus"):
     return f"Does collection hello_milvus exist in Milvus: {has}"
 
 
+@app.get("/get_list_collections")
+def get_list_collections():
+    return {
+        'list_collections': utility.list_collections()
+    }
+
+
 @app.get("/create_collection")
 def create_collection(name_collect: str = "hello_milvus"):
     #################################################################################
