@@ -34,10 +34,16 @@ How Piper works
 
 Quick start
 ===========
-Easy test pipertool package
+Quick start pipertool package compose env
+===========
 
 In root directory project run command in terminal
+
+- sudo -u root /bin/bash
+
 - create and activate venv
+
+- pip install -r requirements.txt
 
 - in configuration.py rename for correctly path for new directory
 
@@ -53,6 +59,22 @@ In root directory project run command in terminal
 
 - pip uninstall piper
 
+Quick start pipertool package compose env
+===========
+
+In root directory project run command in terminal
+
+- sudo -u root /bin/bash
+
+- create and activate venv
+
+- pip install -r requirements.txt
+
+- in configuration.py rename for correctly path for new directory
+
+- python main.py
+
+- await click CTRL+C from compose env
 
 Installation
 ============
