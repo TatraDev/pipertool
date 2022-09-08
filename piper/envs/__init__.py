@@ -68,6 +68,7 @@ class VirtualEnv:
         logger.info("Entering VirtualEnv")
         self._old_environment = get_env()
         set_env(self)
+        # TODO update work with return resource
         return self.__resource
 
     def __exit__(self, *args, **kws):
@@ -84,6 +85,7 @@ class ComposeEnv:
         logger.info("Entering ComposeEnv")
         self._old_environment = get_env()
         set_env(self)
+        # TODO update work with return resource
         return self.__resource
 
     def __exit__(self, *args, **kws):

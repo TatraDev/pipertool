@@ -114,7 +114,7 @@ def insert_data(name_collect: str = "hello_milvus"):
 
     collection.create_index("embeddings", index)
 
-    return 'Success', 200
+    return 'Success'
 
 
 @app.get("/search_query")
@@ -167,3 +167,12 @@ def search_query(name_collect: str = "hello_milvus"):
     return {
         'result': result_list
     }
+
+
+# 7. drop collection
+# Finally, drop the hello_milvus collection
+@app.get("/drop_collection")
+def drop_collection(name_collect: str = "hello_milvus"):
+    print(fmt.format("Drop collection `hello_milvus`"))
+    utility.drop_collection(name_collect)
+    return 'Success'
