@@ -1,7 +1,7 @@
 |Banner|
 
 
-|License| |Release| |Docs| |Build status| |Contact| |Blog|
+|Contribs| |License| |Release| |Docs| |Build status| |Contact| |Blog|
 
 **Piper** is an **open-source** platform for data science and machine
 learning prototyping. Concentrate only on your goals. Key features:
@@ -127,12 +127,12 @@ By submitting a pull request to this project, you agree to license your contribu
    :alt: Piper logo
 
 
-.. |Contribs| image:: https://tatradev.com
-   :target: https://github.com/TatraDev/piper/graphs/contributors
+.. |Contribs| image:: https://img.shields.io/badge/contributors-3-brightgreen
+   :target: https://github.com/TatraDev/pipertool/graphs/contributors
    :alt: Contributors
 
 
-.. |Release| image:: https://img.shields.io/github/release/zifter/numeral-system-py.svg
+.. |Release| image:: https://img.shields.io/badge/release-v0.0.2-blue
    :target: https://github.com/TatraDev/pipertool/releases
 
 .. |Build status| image:: https://github.com/TatraDev/pipertool/workflows/test/badge.svg?branch=venv_logic&event=push
@@ -147,5 +147,5 @@ By submitting a pull request to this project, you agree to license your contribu
 .. |License| image:: https://img.shields.io/badge/License-Apache-yellow.svg
     :target:  https://www.apache.org/licenses/LICENSE-2.0
 
-.. |Docs| image:: https://img.shields.io/badge/docs-passing-green
+.. |Docs| image:: https://img.shields.io/badge/docs-passing-brightgreen
     :target:  http://pipertool.org
