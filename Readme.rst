@@ -5,6 +5,7 @@
 • `Chat (Community & Support) <https://t.me/pipertool>`_
 • `Tutorials <http://pipertool.org>`_
 
+|Contribs| |License| |Release| |Python Version| |Docs| |Build status| |Contact| |Blog|
 
 **Piper** is an **open-source** platform for data science and machine
 learning prototyping. Concentrate only on your goals. Key features:
@@ -31,6 +32,48 @@ How Piper works
 
 Quick start
 ===========
+Quick start pipertool package compose env
+===========
+
+In root directory project run command in terminal
+
+- sudo -u root /bin/bash
+
+- create and activate venv
+
+- pip install -r requirements.txt
+
+- in configuration.py rename for correctly path for new directory
+
+- python setup.py install
+
+- piper --env-type compose start
+
+- 0.0.0.0:7585 - FastApi
+
+- 0.0.0.0:9001 - Milvus Console (minioadmin/minioadmin)
+
+- piper --env-type compose stop
+
+- pip uninstall piper
+
+Quick start pipertool package compose env
+===========
+
+In root directory project run command in terminal
+
+- sudo -u root /bin/bash
+
+- create and activate venv
+
+- pip install -r requirements.txt
+
+- in configuration.py rename for correctly path for new directory
+
+- python main.py
+
+- await click CTRL+C from compose env
+
 
 
 Installation
@@ -88,6 +131,28 @@ By submitting a pull request to this project, you agree to license your contribu
    :alt: Piper logo
 
 
-.. |Contribs| image:: https://tatradev.com
-   :target: https://github.com/TatraDev/piper/graphs/contributors
+.. |Contribs| image:: https://img.shields.io/badge/contributors-3-brightgreen
+   :target: https://github.com/TatraDev/pipertool/graphs/contributors
    :alt: Contributors
+
+.. |Python Version| image:: https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-blue
+   :target: https://pypi.org/project/pipertool
+   :alt: Python Version
+
+.. |Release| image:: https://img.shields.io/badge/release-v0.0.2-blue
+   :target: https://github.com/TatraDev/pipertool/releases
+
+.. |Build status| image:: https://github.com/TatraDev/pipertool/workflows/test/badge.svg?branch=venv_logic&event=push
+    :target: https://github.com/TatraDev/pipertool/actions?query=workflow%3Atest
+
+.. |Contact| image:: https://img.shields.io/badge/telegram-write%20me-blue.svg
+    :target:  https://t.me/pipertool
+
+.. |Blog| image:: https://img.shields.io/badge/site-my%20blog-yellow.svg
+    :target:  https://tatradev.com
+
+.. |License| image:: https://img.shields.io/badge/License-Apache_2.0-yellow.svg
+    :target:  https://www.apache.org/licenses/LICENSE-2.0
+
+.. |Docs| image:: https://img.shields.io/badge/docs-passing-brightgreen
+    :target:  http://pipertool.org
