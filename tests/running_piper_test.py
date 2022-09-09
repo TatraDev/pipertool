@@ -1,4 +1,5 @@
 # pytest -vs tests/running_piper_test.py::TestDocker
+import time
 from pathlib import Path
 from shlex import split
 from subprocess import check_call
@@ -7,7 +8,7 @@ from venv import create
 
 import requests
 
-from piper.envs import VirtualEnv
+from piper.envs import ComposeEnv, VirtualEnv
 
 main_app_url = f'http://localhost:8788'
 
@@ -41,11 +42,33 @@ class TestDocker:
 
 class TestVenv:
     """
-        venv container API test. Methods:
-            dummy
+        venv test. Methods:
+            scenario
     """
-    def test_dummy(self):
+
+    def test_scenario(self):
         with VirtualEnv() as env:
             env.copy_struct_project()
             env.create_files_for_venv()
             env.create_files_for_tests()
+
+
+class TestCompose:
+    """
+        Compose test. Methods:
+            scenario
+    """
+
+    def test_health_check(self):
+        with ComposeEnv() as compose:
+            compose.copy_struct_project()
+            compose.create_files_for_compose()
+            compose.start_compose()
+
+            time.sleep(5)
+            url = 'http://127.0.0.1:7585/health_check'
+            result = requests.get(url)
+            assert result.status_code == 200
+
+            compose.stop_compose()
+

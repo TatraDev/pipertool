@@ -52,7 +52,7 @@ def inputs_to_dict(*args, **kwargs):
 
 
 def add_packages_to_install(packages_list):
-    row = f'RUN apt install -y {" ".join(packages_list)} \n' 
+    row = f'RUN apt install -y {" ".join(packages_list)} \n'
     return row
 
 
@@ -153,6 +153,7 @@ def wait_for_fast_api_app_start(host, external_port, wait_on_iter, n_iters):
             sys.exit()
         i += 1
 
+
 class FastAPIExecutor(HTTPExecutor):
     requirements = ["gunicorn", "fastapi", "uvicorn", "aiohttp", "docker", "Jinja2", "pydantic", "loguru"]
     base_handler = "run"
@@ -218,8 +219,10 @@ class FastAPIExecutor(HTTPExecutor):
 
 
 class FastAPITesseractExecutor(HTTPExecutor):
-    requirements = ["gunicorn", "fastapi", "uvicorn", "aiohttp", "docker", "Jinja2", "pydantic", "loguru", "numpy", "opencv-python", "pytesseract",  "python-multipart", "pdf2image", "spacy"]
-    packages_list = ['tree', 'cmake', 'libgl1-mesa-glx', 'poppler-utils', 'tesseract-ocr', 'libtesseract-dev', 'libleptonica-dev', 'mc']
+    requirements = ["gunicorn", "fastapi", "uvicorn", "aiohttp", "docker", "Jinja2", "pydantic", "loguru", "numpy",
+                    "opencv-python", "pytesseract", "python-multipart", "pdf2image", "spacy"]
+    packages_list = ['tree', 'cmake', 'libgl1-mesa-glx', 'poppler-utils', 'tesseract-ocr', 'libtesseract-dev',
+                     'libleptonica-dev', 'mc']
     base_handler = "recognize"
 
     def __init__(self, port: int = 8080, **service_kwargs):
@@ -246,7 +249,8 @@ class FastAPITesseractExecutor(HTTPExecutor):
             post_install_lines = ""
 
             # docker_image = PythonTesseractImage(self.image_tag, "3.9", cmd=f"./run.sh")
-            docker_image = PythonImage(self.image_tag, "3.9", cmd=f"./run.sh", template_file='default-python.j2', run_rows=run_rows, post_install_lines=post_install_lines)
+            docker_image = PythonImage(self.image_tag, "3.9", cmd=f"./run.sh", template_file='default-python.j2',
+                                       run_rows=run_rows, post_install_lines=post_install_lines)
             build_image(project_output_path, docker_image)
 
             self.create_fast_api_files(project_output_path, **service_kwargs)

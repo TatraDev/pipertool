@@ -5,7 +5,8 @@ import time
 from loguru import logger
 
 from piper.configurations import get_configuration
-from piper.envs import CurrentEnv, DockerEnv, VirtualEnv
+from piper.envs import ComposeEnv, CurrentEnv, DockerEnv, VirtualEnv
+
 # from piper.services import (SpacyNER, StringValue, TesseractRecognizer,
 #                             TestMessageAdder)
 # from piper.utils import tesrct_utils as tu
@@ -21,7 +22,7 @@ if __name__ == '__main__':
     #     result = loop.run_until_complete(adder(x))
     #     print(result)
 
-    # x = StringValue(value="hello, world") 
+    # x = StringValue(value="hello, world")
     # adder = TestMessageAdder(appender="!", port=cfg.docker_app_port)
     # result = loop.run_until_complete(adder(x))
     # print(result)
@@ -37,11 +38,21 @@ if __name__ == '__main__':
     #     result = loop.run_until_complete(recognizer())
     #     logger.info(f'result of recognition is {result}')
 
-    with VirtualEnv() as env:
-        env.copy_struct_project()
-        env.create_files_for_venv()
-        env.create_files_for_tests()
-        
+    # with VirtualEnv() as env:
+    #     env.copy_struct_project()
+    #     env.create_files_for_venv()
+    #     env.create_files_for_tests()
+
+    with ComposeEnv() as env:
+        try:
+            env.copy_struct_project()
+            env.create_files_for_compose(testing=True)
+            env.start_compose()
+        except KeyboardInterrupt:
+            logger.info('Ctrl+C pressed. Except KeyboardInterrupt.')
+            env.stop_compose()
+            sys.exit(1)
+
         # sys.exit()
 
         # sn = SpacyNER()

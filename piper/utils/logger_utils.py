@@ -10,7 +10,7 @@ formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(funcName)s - %(me
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-fh = logging.FileHandler('piper_base_log.log')
+fh = logging.FileHandler('../piper_base_log.log')
 fh.setLevel(logging.DEBUG)
 fh.setFormatter(formatter)
 logger.addHandler(fh)
