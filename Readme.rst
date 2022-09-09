@@ -147,5 +147,5 @@ By submitting a pull request to this project, you agree to license your contribu
 .. |License| image:: https://img.shields.io/badge/License-Apache-yellow.svg
     :target:  https://www.apache.org/licenses/LICENSE-2.0
 
-.. |Docs| image:: https://readthedocs.org/projects/numeral-system-py/badge/?version=latest&style=flat
+.. |Docs| image:: https://img.shields.io/badge/docs-passing-green
     :target:  http://pipertool.org
