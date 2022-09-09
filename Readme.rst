@@ -1,5 +1,9 @@
 |Banner|
 
+`Website <http://pipertool.org/>`_
+• `Docs <http://pipertool.org>`_
+• `Chat (Community & Support) <https://t.me/pipertool>`_
+• `Tutorials <http://pipertool.org>`_
 
 |Contribs| |License| |Release| |Python Version| |Docs| |Build status| |Contact| |Blog|
 
