@@ -8,14 +8,14 @@ class Configuration:
     env = None
 
     # start time and counter
-    wait_on_iter = 0.5
-    n_iters = 10
+    wait_on_iter = 5
+    n_iters = 20
 
     # docker start time and counter
-    docker_wait_on_iter = 0.5
+    docker_wait_on_iter = 4
     docker_n_iters = 20    
 
-    n_gunicorn_workers = 1
+    n_gunicorn_workers = 4
 
     image_suffixes = set(['jpg', 'jpeg', 'png'])
     pdf_suffixes = set(['pdf'])

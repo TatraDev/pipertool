@@ -1,25 +1,48 @@
 import time
 
-from fastapi import FastAPI, Request, status
-from piper.envs import CurrentEnv
+from fastapi import FastAPI, Request, status, Response, File, UploadFile
+from piper.envs import CurrentEnv, DockerEnv
+from piper.configurations import get_configuration
+
+from loguru import logger
+logger.add("file_.log", level="INFO", backtrace=True, diagnose=True, rotation='5 MB')
 
 {% for script_name in scripts.keys() %}
 from {{ script_name }} import *
 {% endfor %}
 
+cfg = get_configuration()
 app = FastAPI(debug=True)
 
 @app.post('/health_check', status_code = status.HTTP_200_OK)
 async def health_check():
+    logger.info('fast_api.j2 test health_check')
     return {"message": "health check"}
 
+
+logger.debug(f'CurrentEnv is {CurrentEnv}')
+logger.debug(f'cfg.env is {cfg.env}')
+
+
+# with CurrentEnv():
+# if True:
+# with DockerEnv():
 with CurrentEnv():
-    service = {{ service_class }}( {% for k, v in service_kwargs.items() %} {{ k }}={{ v }}, {% endfor %} )
+    logger.info(f'CurrentEnv')
+    service = {{ service_class }}({% for k, v in service_kwargs.items() %} {{ k }}={{ v }}, {% endfor %})
+    logger.info(f'service {service}')
 
     @app.post('/{{ function_name }}')
     async def {{ function_name }}(
-        request_model: {{ request_model }},
+        #request_model: {{ request_model }},
+        file: UploadFile = File(...)
     ):
-        result = await service.{{ function_name }}(request_model)
+        data_b = await file.read()
+        logger.info('{{ function_name }} POST request ')
+        result = await service.{{ function_name }}(data_b)
 
-        return result.dict()
+        logger.info(f'fast_api.j2 result is {result}')
+        try:
+            return result
+        except Exception as e:
+            logger.error(f'fast_api.j2 error while recognize {e}')

@@ -8,9 +8,10 @@ import inspect
 import aiohttp
 from loguru import logger
 import docker
+from docker.errors import APIError, BuildError
 from pydantic import BaseModel #, BytesObject, ListOfStringsObject
 
-from piper.base.docker import PythonImage
+from piper.base.docker import PythonImage, TensorFlowImage
 # from piper.base.docker import PythonTesseractImage
 from piper.base.backend.utils import render_fast_api_backend, render_fast_api_tsrct_backend
 from piper.envs import is_docker_env, is_current_env, get_env
@@ -29,6 +30,7 @@ class LocalExecutor:
 
 
 def is_known(obj):
+    logger.info(f'test object {obj}')
     basic = obj.__class__.__name__ in {'dict', 'list', 'tuple', 'str', 'int', 'float', 'bool'}
     models = isinstance(obj, (BaseModel,))
     return basic or models
@@ -109,10 +111,20 @@ def build_image(path: str, docker_image):
     with open(f"{path}/Dockerfile", "w") as output:
         output.write(image)
 
-    image, logs = client.images.build(path=path,
-                                      tag=docker_image.tag,
-                                      quiet=False,
-                                      timeout=20)
+    logger.info('build start!')
+
+    try:
+        image, logs = client.images.build(path=path,
+                                        tag=docker_image.tag,
+                                        quiet=False,
+                                        timeout=120)
+    except (BuildError, APIError) as e:
+        logger.error('error while build_image:')
+        for line in e.build_log:
+            if 'stream' in line:
+                logger.error(line['stream'].strip())
+        sys.exit()
+
     for log in logs:
         logger.info(f'executor build_image: {log}')
     logger.info(f'image is {image}')
@@ -145,10 +157,11 @@ def wait_for_fast_api_app_start(host, external_port, wait_on_iter, n_iters):
             if r.status_code == 200:
                 break
         except Exception as e:
+            logger.error(f'resive health_check answer {e}')
             time.sleep(wait_on_iter)
 
         if i == n_iters:
-            logger.error('FastAPI app can`t start or n_iters too small')
+            logger.error(f'FastAPI app can`t start or wait_on_iter: {wait_on_iter} or n_iters: {n_iters} too small')
             sys.exit()
         i += 1
 
@@ -267,6 +280,99 @@ class FastAPITesseractExecutor(HTTPExecutor):
 
         super().__init__('localhost', port, self.base_handler)
 
+
+class FastAPIFaceRecognExecutor(HTTPExecutor):
+    # basic requements
+    requirements = ["gunicorn", "fastapi", "uvicorn", "aiohttp", "docker", "Jinja2", "pydantic", "loguru", "numpy", "opencv-python", "python-multipart", ]
+
+    # executor specific requements
+    requirements.extend(
+        [
+            # 'python3-opencv'
+            'tensorflow',
+            'mtcnn',            
+        ]
+    )
+
+    # basic packages
+    packages_list = ['apt-utils', 'tree', 'cmake', 'mc']
+
+    # executor specific packages
+    packages_list.extend(
+        [
+            'libgl1',            
+            'ffmpeg',
+            'libsm6',
+            'libxext6',
+        ]
+    )
+
+    base_handler = "recognize"
+
+    def __init__(self, port: int = 8080, **service_kwargs):
+        self.container = None
+        # self.image_tag = 'piper:latest'\
+        self.image_tag = 'tensorflow/tensorflow'
+        self.container_name = "piper_FastAPI_FaceRecogn"
+
+        if is_docker_env():
+            docker_client = docker.DockerClient(base_url='unix://var/run/docker.sock')
+            cfg = get_configuration()
+            project_output_path = cfg.path
+
+            copy_piper(project_output_path)
+            copy_scripts(project_output_path, self.scripts())
+
+            run_rows = ''
+            run_rows += add_row('RUN apt update && apt install -y apt-transport-https')
+            run_rows += add_row('RUN apt install -y software-properties-common')
+            run_rows += add_packages_to_install(self.packages_list)
+            run_rows += add_row('RUN pip3 install --upgrade pip')
+
+            post_install_lines = ""
+
+            docker_image = TensorFlowImage(self.image_tag, 'latest-gpu-jupyter', cmd=f"./run.sh", template_file='default-general.j2', run_rows=run_rows, post_install_lines=post_install_lines)
+            logger.info('Docker file created')
+
+            write_requirements(project_output_path, self.requirements)
+            logger.info('python requirements file created')
+
+            logger.info('build_image')
+            build_image(project_output_path, docker_image)
+
+            logger.info('image builded')
+            self.create_fast_api_files(project_output_path, **service_kwargs)
+
+            # create and run docker container
+            # if container exits it will be recreated!
+            logger.info('create image and container started')
+            container = du.create_image_and_container_by_dockerfile(
+                docker_client,
+                project_output_path,
+                self.image_tag,
+                self.container_name,
+                port
+            )
+
+            logger.info('waiting for FastApi service start')
+            if container:
+                output = container.attach(stdout=True, stderr=True, stream=False, logs=True)
+                for line in output:                
+                    logger.info(str(line))
+                    #TODO test FastAPI errors by other way
+                    if 'Traceback' in str(line):
+                        logger.error('FastAPI can`t start')
+                        sys.exit()
+                # logger.info(container.stats(decode=False, stream=False))
+
+            wait_for_fast_api_app_start('localhost', cfg.docker_app_port, cfg.wait_on_iter, cfg.n_iters)
+        else:
+            # TODO: Local ENVIRONMENT checks
+            pass
+
+        super().__init__('localhost', port, self.base_handler)
+
+
     def rm_container(self):
         if self.container:
             self.container.remove(force=True)
@@ -278,21 +384,19 @@ class FastAPITesseractExecutor(HTTPExecutor):
         cfg = get_configuration()
 
         # TODO add support more than one functions
-        backend = render_fast_api_tsrct_backend(
+        backend = render_fast_api_backend(
             service_class=self.__class__.__name__,
             service_kwargs=dict(service_kwargs),
             scripts=self.scripts(),
             function_name=self.base_handler,
-            # request_model="BytesObject",
-            # response_model="ListOfStringsObject"
+            request_model="BytesObject",
+            response_model="ListOfStringsObject"
         )
 
         with open(f"{path}/main.py", "w") as output:
             output.write(backend)
 
-        write_requirements(path, self.requirements)
-
         gunicorn = "#!/bin/bash \n" \
-                   f"gunicorn -b 0.0.0.0:8080 --workers {cfg.n_gunicorn_workers} main:app --worker-class uvicorn.workers.UvicornWorker --preload --timeout 120"
+                   f"gunicorn -b 0.0.0.0:8080 --workers {cfg.n_gunicorn_workers} main:app --worker-class uvicorn.workers.UvicornWorker --preload --timeout 240" 
         with open(f"{path}/run.sh", "w") as output:
             output.write(gunicorn)

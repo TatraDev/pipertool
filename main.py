@@ -1,10 +1,14 @@
-from piper.services import TestMessageAdder, StringValue, TesseractRecognizer, SpacyNER
+# from piper.services import TestMessageAdder
+# from piper.services import  StringValue
+# from piper.services import  TesseractRecognizer
+# from piper.services import  SpacyNER
+from piper.services import  FaceRecognizer
 from piper.envs import CurrentEnv, DockerEnv
 from piper.configurations import get_configuration
 import time
 import asyncio
 import sys
-from piper.utils import tesrct_utils as tu
+# from piper.utils import tesrct_utils as tu
 
 from loguru import logger
 logger.add("file.log", level="INFO", backtrace=True, diagnose=True, rotation='5 MB')
@@ -29,7 +33,9 @@ if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     with DockerEnv() as env:
         # object created
-        recognizer = TesseractRecognizer(port=cfg.docker_app_port)
+        # recognizer = TesseractRecognizer(port=cfg.docker_app_port)
+        recognizer = FaceRecognizer(port=cfg.docker_app_port)
+        
         
         result = loop.run_until_complete(recognizer())
         logger.info(f'result of recognition is {result}')

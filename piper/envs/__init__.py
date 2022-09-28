@@ -1,4 +1,6 @@
+import imp
 from piper.configurations import get_configuration
+from loguru import logger
 
 cfg = get_configuration()
 
@@ -18,7 +20,7 @@ def get_env():
 
 
 def set_env(env):
-    print("Setting environment to: {}".format(env))
+    logger.info("Setting environment to: {}".format(env))
     cfg.env = env
 
 
@@ -28,12 +30,12 @@ class DockerEnv:
         pass
 
     def __enter__(self):
-        print("Entering DockerEnv")
+        logger.info("Docker context management __enter__")
         self._old_environment = get_env()
         set_env(self)
 
     def __exit__(self, *args, **kws):
-        print("Exiting DockerEnv")
+        logger.info("Docker context management __exit__")
         set_env(self._old_environment)
 
 
@@ -43,12 +45,12 @@ class CurrentEnv:
         pass
 
     def __enter__(self):
-        print("Entering CurrentEnv")
+        logger.info("CurrentEnv context management __enter__")
         self._old_environment = get_env()
         set_env(self)
 
     def __exit__(self, *args, **kws):
-        print("Exiting CurrentEnv")
+        logger.info("CurrentEnv context management __exit__")
         set_env(self._old_environment)
 
 

@@ -172,6 +172,8 @@ def create_image_and_container_by_dockerfile(docker_client, path, image_tag, con
                         sys.exit()
                     time.sleep(cfg.docker_wait_on_iter)
 
+                return container
+
 
             except docker.errors.APIError as api_e:
                 logger.error(f'eroror while run container {container_name}')
