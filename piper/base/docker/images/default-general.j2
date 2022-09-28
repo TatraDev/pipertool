@@ -1,0 +1,15 @@
+FROM {{ddocker_name}}:{{ ddocker_version }}
+
+{{ run_command_lines }}
+
+WORKDIR /app
+
+COPY requirements.txt ./requirements.txt
+RUN PYTHONPATH=/usr/bin/python3 pip3 install -r requirements.txt
+
+{{ post_install_lines }}
+
+COPY ./ ./
+RUN chmod +x ./run.sh
+
+ENTRYPOINT ["{{ cmd }}"]
