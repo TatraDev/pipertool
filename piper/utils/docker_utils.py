@@ -7,6 +7,7 @@ from loguru import logger
 
 cfg = get_configuration()
 
+
 def get_image(docker_client, image_name):
     try:
         cur_image = docker_client.images.get(image_name)
@@ -36,6 +37,7 @@ def get_container(docker_client, container_name):
         logger.error(f'non defined exeption {e}')
         return False
 
+
 def get_container_with_status(docker_client, container_name):
     try:
         cur_container = docker_client.containers.get(container_name)
@@ -49,6 +51,7 @@ def get_container_with_status(docker_client, container_name):
     except Exception as e:
         logger.error(f'non defined exeption {e}')
         return False        
+
 
 def stop_container(docker_client, container_name):
     try:
@@ -171,7 +174,6 @@ def create_image_and_container_by_dockerfile(docker_client, path, image_tag, con
                         logger.error(f'container {container_name} can`t start, status is {container.status}')
                         sys.exit()
                     time.sleep(cfg.docker_wait_on_iter)
-
 
             except docker.errors.APIError as api_e:
                 logger.error(f'eroror while run container {container_name}')

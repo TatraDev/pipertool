@@ -9,6 +9,7 @@ from piper.configurations import get_configuration
 
 cfg = get_configuration()
 
+
 def send_file_to_service(url, file_path, json_key):
     multipart_form_data = {
         'file': open(file_path, 'rb')
@@ -27,6 +28,7 @@ def send_file_to_service(url, file_path, json_key):
     except requests.exceptions.ConnectionError as ce:
         logger.error(f'exeption while connect to {url}')
         logger.error(ce)       
+
 
 def img_to_text(img, ts_conf):
     logger.info(f'pytesseract process file with len {len(img)}')

@@ -131,12 +131,12 @@ def run_container(image: str, ports: Dict[int, int]):
 
 
 def wait_for_fast_api_app_start(host, external_port, wait_on_iter, n_iters):
-    '''
+    """
         wait for fast api app will be loaded
-        external_port - 
+        external_port -
         wait_on_iter - seconds between health_check requests
         n_iters - total health_check requests
-    '''
+    """
     logger.info('waiting for FastAPI app start')
     i = 0
     while True:
