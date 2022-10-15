@@ -1,3 +1,11 @@
+# from piper.base.docker import PythonTesseractImage
+from piper.base.backend.utils import (render_fast_api_backend,
+                                      render_fast_api_tsrct_backend)
+from piper.base.docker import PythonImage
+from piper.configurations import get_configuration
+from piper.envs import get_env, is_current_env, is_docker_env
+from piper.utils import docker_utils as du
+
 import inspect
 import os
 import sys
@@ -11,14 +19,6 @@ import docker
 import requests
 from loguru import logger
 from pydantic import BaseModel  # , BytesObject, ListOfStringsObject
-
-# from piper.base.docker import PythonTesseractImage
-from piper.base.backend.utils import (render_fast_api_backend,
-                                      render_fast_api_tsrct_backend)
-from piper.base.docker import PythonImage
-from piper.configurations import get_configuration
-from piper.envs import get_env, is_current_env, is_docker_env
-from piper.utils import docker_utils as du
 
 
 class BaseExecutor:
@@ -89,7 +89,7 @@ class HTTPExecutor(BaseExecutor):
 def copy_piper(path: str):
     cfg = get_configuration()
     from distutils.dir_util import copy_tree
-    copy_tree(cfg.piper_path, f"{path}/piper")
+    copy_tree(cfg.piper_path, f"{path}piper")
 
 
 def copy_scripts(path: str, scripts: Dict[str, str]):
