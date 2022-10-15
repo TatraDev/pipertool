@@ -1,15 +1,15 @@
 class Configuration:
-    # path = "/Users/olegsokolov/PycharmProjects/piper/applications"
-    path = "./piper_new_out/"
-    test_path = "./piper_test_out/"
-    piper_path = "piper"
-    default_env = "docker"
-    docker_app_port = 8788
+    path: str = "./piper_new_out/"
+    test_path: str = "./piper_test_out/"
+    piper_path: str = "../piper"
+    default_env: str = "docker"
+    docker_app_port: int = 8788
 
-    name_venv = "venv_test"
-    number = 10
+    name_venv: str = "venv_test"
+    number: int = 10
 
-    env = 'compose'
+    env: str = 'compose'
+    ignore_import_errors: bool = False
 
     # start time and counter
     wait_on_iter = 0.5

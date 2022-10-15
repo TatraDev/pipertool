@@ -1,11 +1,5 @@
-# pytest -vs tests/running_piper_test.py::TestDocker
+# pytest -vs tests/envs_test.py::TestDocker
 import time
-from pathlib import Path
-from shlex import split
-from subprocess import check_call
-from tempfile import TemporaryDirectory
-from venv import create
-
 import requests
 
 from piper.envs import ComposeEnv, VirtualEnv

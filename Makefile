@@ -1,18 +1,16 @@
 SHELL:=/usr/bin/env bash
 
-.PHONY: lint
+.PHONY: lint unit package test jupyter
+
 lint:
 	flake8 piper
 
-.PHONY: unit
 unit:
-	pytest -vs tests/running_piper_test.py::TestCompose
+	pytest -vs tests/envs_test.py::TestCompose
 
-.PHONY: package
 package:
 	pip check
 
-.PHONY: test
 test: package unit
 
 jupyter:

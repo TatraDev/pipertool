@@ -12,7 +12,7 @@ import os
 from pathlib import Path
 
 import pytest
-from PiperOperator import *
+from piper_operator_test import *
 
 from piper.configurations import get_configuration
 from piper.envs import DockerEnv, is_docker_env

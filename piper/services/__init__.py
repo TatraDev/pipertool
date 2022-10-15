@@ -1,8 +1,11 @@
-import json
 import sys
 
-import spacy
-from fastapi.responses import JSONResponse
+from piper.imports import safe_import
+
+with safe_import():
+    import spacy
+    from fastapi.responses import JSONResponse
+
 from loguru import logger
 from pydantic import BaseModel
 
@@ -23,16 +26,6 @@ class BytesObject(BaseModel):
 
 class ListOfStringsObject(BaseModel):
     value: list
-
-
-class TestMessageAdder(FastAPIExecutor):
-
-    def __init__(self, appender="TEST", **kwargs):
-        self.appender = appender
-        super().__init__(**kwargs)
-
-    async def run(self, message: StringValue) -> StringValue:
-        return StringValue(value=(message.value + self.appender))
 
 
 class TesseractRecognizer(FastAPITesseractExecutor):

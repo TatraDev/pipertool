@@ -1,7 +1,10 @@
-import cv2
-import numpy as np
-import pdf2image
-import pytesseract
+from piper.imports import safe_import
+with safe_import():
+    import cv2
+    import numpy as np
+    import pdf2image
+    import pytesseract
+
 import requests
 from loguru import logger
 
