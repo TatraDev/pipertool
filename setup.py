@@ -4,11 +4,13 @@ from os import path
 
 from setuptools import find_packages, setup
 
-# Директория, в которой содержится этот файл
+# directory with current setup.py file
 HERE = pathlib.Path(__file__).parent
-# Текст README-файла
+
+# Readme file as text
 README = (HERE / "Readme.rst").read_text()
-# Автоматически собирает в requirements.txt все модули для install_requires, а также настраивает ссылки на зависимости
+
+# Automatically collects all_modules to requirements.txt for install_requires and set dependency links
 with open(path.join(HERE, 'requirements.txt'), encoding='utf-8') as f:
     all_reqs = f.read().split('\n')
 install_requires = [x.strip() for x in all_reqs if ('git+' not in x) and (

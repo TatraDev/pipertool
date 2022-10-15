@@ -7,7 +7,10 @@ cfg = get_configuration()
 
 
 def init_default_env():
-    # INITIALIZE ENVIRONMENT FROM CONFIGURATION
+    """
+    This method initialize the default environment by the string name from the configuration.
+    CurrentEnv means default python where piper is installed.
+    """
     if cfg.default_env == "docker":
         set_env(DockerEnv())
     elif cfg.default_env == "virtualenv":
