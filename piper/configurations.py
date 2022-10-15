@@ -1,7 +1,7 @@
 class Configuration:
     path: str = "./piper_new_out/"
     test_path: str = "./piper_test_out/"
-    piper_path: str = "../piper"
+    piper_path: str = "piper"
     default_env: str = "docker"
     docker_app_port: int = 8788
 
