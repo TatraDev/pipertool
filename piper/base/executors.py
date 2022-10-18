@@ -4,21 +4,21 @@ from piper.base.backend.utils import (render_fast_api_backend,
 from piper.base.docker import PythonImage
 from piper.configurations import get_configuration
 from piper.envs import get_env, is_current_env, is_docker_env
-from piper.utils import docker_utils as du
+from piper.utils import docker_utils
 
 import inspect
-import os
 import sys
 import time
 from abc import ABC, abstractmethod
-from distutils.command.config import config
 from typing import Dict
+from distutils.dir_util import copy_tree
 
 import aiohttp
 import docker
 import requests
-from loguru import logger
 from pydantic import BaseModel  # , BytesObject, ListOfStringsObject
+
+from piper.utils.logger_utils import logger
 
 
 class BaseExecutor:
@@ -88,7 +88,6 @@ class HTTPExecutor(BaseExecutor):
 
 def copy_piper(path: str):
     cfg = get_configuration()
-    from distutils.dir_util import copy_tree
     copy_tree(cfg.piper_path, f"{path}piper")
 
 
@@ -107,7 +106,8 @@ def write_requirements(path, requirements):
 def build_image(path: str, docker_image):
     client = docker.DockerClient(base_url='unix://var/run/docker.sock')
     image = docker_image.render()
-    with open(f"{path}/Dockerfile", "w") as output:
+    print(f"{path}Dockerfile")
+    with open(f"{path}Dockerfile", "w") as output:
         output.write(image)
 
     image, logs = client.images.build(path=path,
@@ -146,6 +146,7 @@ def wait_for_fast_api_app_start(host, external_port, wait_on_iter, n_iters):
             if r.status_code == 200:
                 break
         except Exception as e:
+            logger.error(f"Exception while starting FastAPI app {e}")
             time.sleep(wait_on_iter)
 
         if i == n_iters:
@@ -170,12 +171,15 @@ class FastAPIExecutor(HTTPExecutor):
 
             copy_piper(project_output_path)
             copy_scripts(project_output_path, self.scripts())
-            # build_image(project_output_path, docker_image)
             self.create_fast_api_files(project_output_path, **service_kwargs)
+
+            docker_image = PythonImage(self.image_tag, "3.9", cmd=f"./run.sh", template_file='default-python.j2',
+                                       run_rows="", post_install_lines="")
+            build_image(project_output_path, docker_image)
 
             # create and run docker container
             # if container exits it will be recreated!
-            du.create_image_and_container_by_dockerfile(
+            docker_utils.create_image_and_container_by_dockerfile(
                 docker_client,
                 project_output_path,
                 self.image_tag,
@@ -206,14 +210,13 @@ class FastAPIExecutor(HTTPExecutor):
                                           function_name=self.base_handler,
                                           request_model="StringValue",
                                           response_model="StringValue")
-
         with open(f"{path}/main.py", "w") as output:
             output.write(backend)
 
         write_requirements(path, self.requirements)
 
         gunicorn = "#!/bin/bash \n" \
-                   f"gunicorn -b 0.0.0.0:8080 --workers {cfg.n_gunicorn_workers} main:app --worker-class uvicorn.workers.UvicornWorker --preload --timeout 120 --reload=True"
+                   f"gunicorn -b 0.0.0.0:8080 --workers {cfg.n_gunicorn_workers} main:app --worker-class uvicorn.workers.UvicornWorker --preload --timeout 120"
         with open(f"{path}/run.sh", "w") as output:
             output.write(gunicorn)
 
@@ -257,7 +260,7 @@ class FastAPITesseractExecutor(HTTPExecutor):
 
             # create and run docker container
             # if container exits it will be recreated!
-            du.create_image_and_container_by_dockerfile(
+            docker_utils.create_image_and_container_by_dockerfile(
                 docker_client,
                 project_output_path,
                 self.image_tag,

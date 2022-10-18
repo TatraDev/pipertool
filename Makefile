@@ -6,7 +6,7 @@ lint:
 	flake8 piper
 
 unit:
-	#pytest -vs tests/base_test.py
+	pytest -vs tests/base_test.py
 	pytest -vs tests/envs_test.py::TestCompose
 	pytest -vs tests/envs_test.py::TestVenv
 

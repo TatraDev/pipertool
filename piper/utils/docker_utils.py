@@ -1,9 +1,11 @@
+from piper.configurations import get_configuration
+
 import sys
 import time
 
 import docker
-from configurations import get_configuration
-from loguru import logger
+# from loguru import logger
+from piper.utils.logger_utils import logger
 
 cfg = get_configuration()
 
@@ -127,7 +129,7 @@ def image_find_and_rm(docker_client, image_tag):
         return True
 
 
-def create_image_and_container_by_dockerfile(docker_client, path, image_tag, container_name, port):
+def create_image_and_container_by_dockerfile(docker_client: docker.DockerClient, path, image_tag, container_name, port):
     # should be deleted
     status = stop_and_rm_container(docker_client, container_name)
 
@@ -156,7 +158,10 @@ def create_image_and_container_by_dockerfile(docker_client, path, image_tag, con
 
             # run container
             try:
-                container = docker_client.containers.run(image_tag, name=container_name, detach=True, ports={8080:port})
+                container = docker_client.containers.run(image_tag,
+                                                         name=container_name,
+                                                         detach=True,
+                                                         ports={8080: port})
                 for log in container.logs():
                     logger.debug(log)
                 logger.info(f'container {container} created')

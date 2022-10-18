@@ -22,7 +22,10 @@ class PythonImage:
                                        trim_blocks=True,
                                        lstrip_blocks=True)
         template = jinja_env.get_template(self.template_file)
-        return template.render(cmd=self.cmd, python_docker_version=self.python_docker_version, run_command_lines=self.run_rows, post_install_lines=self.post_install_lines)
+        return template.render(cmd=self.cmd,
+                               python_docker_version=self.python_docker_version,
+                               run_command_lines=self.run_rows,
+                               post_install_lines=self.post_install_lines)
 
 
 # class PythonTesseractImage:
