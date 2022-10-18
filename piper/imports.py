@@ -28,29 +28,52 @@ class PiperDummyModule(ModuleType):
     __all__ = []
 
 
+def _piper_was_touched_in_frame(frame_before=1):
+    call_function_frame = inspect.currentframe().f_back
+    frame = call_function_frame
+    for i in range(frame_before):
+        frame = frame.f_back
+
+    result = False
+    f_locals = frame.f_locals
+    f_globals = frame.f_globals
+    all_variables = f_locals | f_globals
+
+    if all_variables.values():
+        all_variables = [v for v in all_variables.values() if v is not None]
+        if len(all_variables) > 0:
+            variables_have_piper_package = any("piper" in v.__package__ \
+                    for v in all_variables if hasattr(v, "__package__") and type(v.__package__) == str)
+            variables_have_piper_module = any("piper" in v.__module__ \
+                    for v in all_variables if hasattr(v, "__module__") and type(v.__module__) == str)
+            result = variables_have_piper_module | variables_have_piper_package
+
+    return result
+
+
+def _from_piper_file_but_not_piper(name: str, globals={}):
+    is_import_from_piper_source_code = "__file__" in globals and "piper/" in globals["__file__"]
+    not_piper_import = not ("piper" in name)
+    result = is_import_from_piper_source_code and not_piper_import
+
+    return result
+
+
 def try_import(name, globals={}, locals={}, fromlist=[], level=0):
     """
     This import replace real Python import with fake import which returns warning only and PiperDummyModule.
     This works for everything under piper/ frameworks files by filename but not for piper import (like piper.base)
     And this also works for every file where you import something from piper firstly !
     """
-    is_piper_imported_from_previous_module = False
-    prev_module_locals = inspect.currentframe().f_back.f_locals
-    prev_module_globals = inspect.currentframe().f_back.f_globals
-    prev_modules = prev_module_locals | prev_module_globals
+    if not (configuration.ignore_import_errors or configuration.safe_import_activated):
+        logger.info("Ignore import errors is off in Configuration and deactivated")
+        return real_import(name, globals, locals, fromlist, level)
 
-    if prev_modules.values():
-        prev_modules = [v for v in prev_modules.values() if v is not None and hasattr(v, "__module__")]
-        if len(prev_modules) > 0:
-            is_piper_imported_from_previous_module = \
-                any("piper" in v.__module__ for v in prev_modules if type(v.__module__) == str)
+    piper_was_touched_in_previous_frame = _piper_was_touched_in_frame(frame_before=1)
+    need_to_catch = piper_was_touched_in_previous_frame or _from_piper_file_but_not_piper(name, globals)
 
-    is_import_from_piper_source_code = "__file__" in globals and "piper/" in globals["__file__"]
-    not_piper_import = not ("piper" in name)
-    is_from_source_but_not_piper = is_import_from_piper_source_code and not_piper_import
-
-    if is_piper_imported_from_previous_module and is_from_source_but_not_piper:
-        logger.info(f"Piper activates safe import for library {name} in piper file {globals['__file__']} ")
+    if need_to_catch:
+        logger.info(f"Piper runs safe import for library {name} in piper file {globals['__file__']} ")
         try:
             return real_import(name, globals, locals, fromlist, level)
         except ImportError as e:
@@ -69,7 +92,7 @@ if builtins.__import__ != try_import:
     real_import = builtins.__import__
 
 
-def set_ignore_import_errors(ignore: bool = True):
+def _set_import_functions(ignore: bool = True):
     if ignore:
         builtins.__import__ = try_import
     else:
@@ -89,12 +112,14 @@ def activate_safe_import():
 
     """
     logger.info(f"Piper activates safe import")
-    set_ignore_import_errors(ignore=True)
+    configuration.safe_import_activated = True
+    _set_import_functions(ignore=True)
 
 
 def deactivate_safe_import():
     logger.info(f"Piper deactivates safe import")
-    set_ignore_import_errors(ignore=False)
+    configuration.safe_import_activated = False
+    _set_import_functions(ignore=configuration.ignore_import_errors)
 
 
 class safe_import:

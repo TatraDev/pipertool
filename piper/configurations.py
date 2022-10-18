@@ -13,6 +13,7 @@ class Configuration:
 
     env: str = 'compose'
     ignore_import_errors: bool = True
+    safe_import_activated: bool = False
 
     # start time and counter
     wait_on_iter = 0.5
