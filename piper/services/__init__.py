@@ -6,14 +6,15 @@ with safe_import():
     import spacy
     from fastapi.responses import JSONResponse
 
-from loguru import logger
+# from loguru import logger
+from piper.utils.logger_utils import logger
 from pydantic import BaseModel
 
 from piper.base.executors import FastAPIExecutor, FastAPITesseractExecutor
 from piper.configurations import get_configuration
 from piper.utils import tesrct_utils as tu
 
-logger.add("file.log", level="INFO", backtrace=True, diagnose=True, rotation='5 MB')
+# logger.add("file.log", level="INFO", backtrace=True, diagnose=True, rotation='5 MB')
 
 
 class StringValue(BaseModel):

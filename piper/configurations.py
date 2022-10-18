@@ -1,6 +1,9 @@
+import time
+
+
 class Configuration:
-    path: str = "./piper_new_out/"
-    test_path: str = "./piper_test_out/"
+    path: str = f"./applications/piper_project_{time.time_ns()}/"
+    test_path: str = f"./applications/piper_project_{time.time_ns()}/"
     piper_path: str = "piper"
     default_env: str = "docker"
     docker_app_port: int = 8788
@@ -9,7 +12,7 @@ class Configuration:
     number: int = 10
 
     env: str = 'compose'
-    ignore_import_errors: bool = False
+    ignore_import_errors: bool = True
 
     # start time and counter
     wait_on_iter = 0.5

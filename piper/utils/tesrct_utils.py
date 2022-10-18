@@ -6,7 +6,8 @@ with safe_import():
     import pytesseract
 
 import requests
-from loguru import logger
+# from loguru import logger
+from piper.utils.logger_utils import logger
 
 from piper.configurations import get_configuration
 
