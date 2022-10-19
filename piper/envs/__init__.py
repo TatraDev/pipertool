@@ -16,7 +16,7 @@ def init_default_env():
     elif cfg.default_env == "virtualenv":
         set_env(VirtualEnv())
     elif cfg.default_env == "compose":
-        set_env(VirtualEnv())
+        set_env(ComposeEnv())
     else:
         set_env(CurrentEnv())
 
@@ -32,69 +32,66 @@ def set_env(env):
     cfg.env = env
 
 
-class DockerEnv:
+class Env:
+    name = "no_env"
 
-    def __init__(self):
-        pass
+    _subclasses = []
 
     def __enter__(self):
-        print("Entering DockerEnv")
+        logger.info(f"Entering Env: {self.__class__.__name__}")
         self._old_environment = get_env()
         set_env(self)
 
     def __exit__(self, *args, **kws):
-        print("Exiting DockerEnv")
+        logger.info(f"Exit Env: {self.__class__.__name__}")
         set_env(self._old_environment)
 
+    @classmethod
+    def get_all_envs(cls):
+        return list(cls._subclasses)
 
-class CurrentEnv:
+    def __init_subclass__(cls):
+        Env._subclasses.append(cls)
+
+
+class DockerEnv(Env):
+    name = "docker"
 
     def __init__(self):
         pass
 
-    def __enter__(self):
-        print("Entering CurrentEnv")
-        self._old_environment = get_env()
-        set_env(self)
 
-    def __exit__(self, *args, **kws):
-        print("Exiting CurrentEnv")
-        set_env(self._old_environment)
+class CurrentEnv(Env):
+    name = "current_env"
+
+    def __init__(self):
+        pass
 
 
-class VirtualEnv:
+class VirtualEnv(Env):
+    name = "virtualenv"
 
     def __init__(self):
         self.__resource = VirtualEnvExecutor()
 
     def __enter__(self):
-        logger.info("Entering VirtualEnv")
-        self._old_environment = get_env()
-        set_env(self)
-        # TODO update work with return resource
+        super().__enter__()
         return self.__resource
 
-    def __exit__(self, *args, **kws):
-        logger.info("Exiting VirtualEnv")
-        set_env(self._old_environment)
 
-
-class ComposeEnv:
+class ComposeEnv(Env):
+    name = "compose"
 
     def __init__(self):
         self.__resource = ComposeExecutor()
 
     def __enter__(self):
-        logger.info("Entering ComposeEnv")
-        self._old_environment = get_env()
-        set_env(self)
-        # TODO update work with return resource
+        super().__enter__()
         return self.__resource
 
     def __exit__(self, *args, **kws):
-        logger.info("Exiting ComposeEnv")
+        super().__exit__(* args, ** kws)
         # self.__resource.stop_compose()
-        set_env(self._old_environment)
 
 
 def is_current_env():

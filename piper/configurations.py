@@ -5,13 +5,13 @@ class Configuration:
     path: str = f"./applications/piper_project_{time.time_ns()}/"
     test_path: str = f"./applications/piper_project_{time.time_ns()}/"
     piper_path: str = "piper"
-    default_env: str = "docker"
+    default_env: str = "compose"
     docker_app_port: int = 8788
 
     name_venv: str = "venv_test"
     number: int = 10
 
-    env: str = 'compose'
+    env: str = None
     ignore_import_errors: bool = True
     safe_import_activated: bool = False
 
