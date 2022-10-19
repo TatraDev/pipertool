@@ -3,9 +3,12 @@ from piper.base.backend.utils import (render_fast_api_backend,
                                       render_fast_api_tsrct_backend)
 from piper.base.docker import PythonImage
 from piper.configurations import get_configuration
-from piper.envs import get_env, is_current_env, is_docker_env
+from piper.envs import get_env, is_current_env, is_docker_env, Env
 from piper.utils import docker_utils
+from piper.utils.logger_utils import logger
+from piper.base.executors import HTTPExecutor
 
+import asyncio
 import inspect
 import sys
 import time
@@ -18,38 +21,6 @@ import docker
 import requests
 from pydantic import BaseModel  # , BytesObject, ListOfStringsObject
 
-from piper.utils.logger_utils import logger
-
-
-class BaseExecutor:
-    pass
-
-
-class LocalExecutor:
-    pass
-
-
-def is_known(obj):
-    basic = obj.__class__.__name__ in {'dict', 'list', 'tuple', 'str', 'int', 'float', 'bool'}
-    models = isinstance(obj, (BaseModel,))
-    return basic or models
-
-
-def prepare(obj):
-    if isinstance(obj, (BaseModel,)):
-        return obj.dict()
-    return obj
-
-
-def inputs_to_dict(*args, **kwargs):
-    from_args = {}
-    for arg in args:
-        if is_known(arg):
-            from_args.update(prepare(arg))
-    from_kwargs = {k: prepare(v) for k, v in kwargs.items() if is_known(v)}
-    from_args.update(from_kwargs)
-    return from_args
-
 
 def add_packages_to_install(packages_list):
     row = f'RUN apt install -y {" ".join(packages_list)} \n'
@@ -58,32 +29,6 @@ def add_packages_to_install(packages_list):
 
 def add_row(row):
     return f'{row} \n'
-
-
-class HTTPExecutor(BaseExecutor):
-
-    def __init__(self, host: str, port: int, base_handler: str):
-        self.host = host
-        self.port = port
-
-    @abstractmethod
-    async def run(self, *args, **kwargs):
-        pass
-
-    async def __call__(self, *args, **kwargs):
-        logger.info(f'get_env() {get_env()}')
-        logger.info(f'is_current_env() {is_current_env()}')
-        if is_current_env():
-            return await self.run(*args, **kwargs)
-        else:
-            function = "run"
-            request_dict = inputs_to_dict(*args, **kwargs)
-            logger.info(f'request_dict is {request_dict}')
-            async with aiohttp.ClientSession() as session:
-                url = f'http://{self.host}:{self.port}/{function}'
-                logger.info(f'run function with url {url} and data {request_dict}')
-                async with session.post(url, json=request_dict) as resp:
-                    return await resp.json()
 
 
 def copy_piper(path: str):
@@ -162,7 +107,8 @@ class FastAPIExecutor(HTTPExecutor):
     def __init__(self, port: int = 8080, **service_kwargs):
         self.container = None
         self.image_tag = 'piper:latest'
-        self.container_name = "piper_FastAPI"
+        self.id = hash(self)
+        self.container_name = f"piper_FastAPI_{self.id}"
 
         if is_docker_env():
             docker_client = docker.DockerClient(base_url='unix://var/run/docker.sock')
@@ -193,6 +139,14 @@ class FastAPIExecutor(HTTPExecutor):
             pass
 
         super().__init__('localhost', port, self.base_handler)
+
+    async def aio_call(self, *args, **kwargs):
+        return await super().__call__(*args, ** kwargs)
+
+    def __call__(self, *args, **kwargs):
+        loop = asyncio.get_event_loop()
+        result = loop.run_until_complete(self.aio_call(*args, **kwargs))
+        return result
 
     def rm_container(self):
         if self.container:
