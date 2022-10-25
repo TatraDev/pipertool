@@ -12,10 +12,13 @@ from pydantic import BaseModel
 
 from piper.base.executors import FastAPIExecutor, FastAPITesseractExecutor
 from piper.configurations import get_configuration
-from piper.utils import tesrct_utils as tu
+
+from piper.utils.TesseractOCR import tesseract_ocr as tu
+from piper.utils.FaceDetection import face_detector as fru
 
 # logger.add("file.log", level="INFO", backtrace=True, diagnose=True, rotation='5 MB')
 
+from piper.base.executors.fastapi import FastAPIFaceDetectorExecutor
 
 class StringValue(BaseModel):
     value: str
@@ -131,3 +134,19 @@ class SpacyNER():
             return JSONResponse(content=res)
         else:
             logger.error(f'nlp object didn`t create. you should use set_model(model_name)')
+
+
+class FaceDetector(FastAPIFaceDetectorExecutor):
+    '''
+        FaceDetector implementation service
+    '''
+    def __init__(self, **kwargs):
+        self.face_detector = fru.FaceDetector()
+        super().__init__(**kwargs)
+
+    
+    async def recognize(self, file_content : BytesObject, suf: str) -> ListOfStringsObject:     
+        logger.info(f'face_detector recive {type(file_content)} object')
+        text_dict = self.face_detector.bytes_handler(file_content)
+        logger.info(f'face_detector img_bytes_handler return {(text_dict)} object')
+        return JSONResponse(content=text_dict)

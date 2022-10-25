@@ -1,7 +1,9 @@
 import time
 
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request, status, File, UploadFile
 from piper.envs import CurrentEnv
+
+from pathlib import Path
 
 {% for script_name in scripts.keys() %}
 from {{ script_name }} import *
@@ -14,12 +16,23 @@ async def health_check():
     return {"message": "health check"}
 
 with CurrentEnv():
-    service = {{ service_class }}( {% for k, v in service_kwargs.items() %} {{ k }}={{ v }}, {% endfor %} )
+    logger.info(f'CurrentEnv')
+    service = {{ service_class }}({% for k, v in service_kwargs.items() %} {{ k }}={{ v }}, {% endfor %})
+    logger.info(f'service {service}')
 
     @app.post('/{{ function_name }}')
     async def {{ function_name }}(
-        request_model: {{ request_model }},
+        #request_model: {{ request_model }},
+        file: UploadFile = File(...)
     ):
-        result = await service.{{ function_name }}(request_model)
+        data_b = await file.read()
+        suf = Path(file.filename).suffix.lower()
+        suf = suf[1:]
+        logger.info('{{ function_name }} POST request ')
+        result = await service.{{ function_name }}(data_b, suf)
 
-        return result.dict()
+        logger.info(f'fast_api.j2 result is {result}')
+        try:
+            return result
+        except Exception as e:
+            logger.error(f'fast_api.j2 error while recognize {e}')

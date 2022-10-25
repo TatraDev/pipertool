@@ -3,7 +3,7 @@
 import os
 import sys
 import requests
-root_dir = os.path.join(os.path.realpath(os.path.pardir), 'piper_ng')
+root_dir = os.path.join(os.path.realpath(os.path.pardir), 'piper')
 sys.path.insert(1, root_dir)
 
 from pathlib import Path

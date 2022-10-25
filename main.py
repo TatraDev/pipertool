@@ -7,9 +7,15 @@ from loguru import logger
 from piper.configurations import get_configuration
 from piper.envs import ComposeEnv, CurrentEnv, DockerEnv, VirtualEnv
 
-# from piper.services import (SpacyNER, StringValue, TesseractRecognizer,
-#                             TestMessageAdder)
-# from piper.utils import tesrct_utils as tu
+from piper.services import (
+    SpacyNER,
+    StringValue,
+    TesseractRecognizer,
+    FaceDetector,
+    # TestMessageAdder,
+)
+
+from piper.utils import tesrct_utils as tu
 
 logger.add("file.log", level="INFO", backtrace=True, diagnose=True, rotation='5 MB')
 
@@ -28,30 +34,34 @@ if __name__ == '__main__':
     # print(result)
     # adder.rm_container()
 
-    # logger.info(f'main here {time.time()}')
-    # cfg = get_configuration()
-    # loop = asyncio.get_event_loop()
-    # with DockerEnv() as env:
-    #     # object created
-    #     recognizer = TesseractRecognizer(port=cfg.docker_app_port)
-    #
-    #     result = loop.run_until_complete(recognizer())
-    #     logger.info(f'result of recognition is {result}')
+    logger.info(f'main here {time.time()}')
+    cfg = get_configuration()
+
+    print(cfg.path)
+
+    loop = asyncio.get_event_loop()
+    with DockerEnv() as env:
+        # object created
+        # recognizer = TesseractRecognizer(port=cfg.docker_app_port)
+        recognizer = FaceDetector(port=cfg.docker_app_port)
+    
+        result = loop.run_until_complete(recognizer())
+        logger.info(f'result of recognition is {result}')
 
     # with VirtualEnv() as env:
     #     env.copy_struct_project()
     #     env.create_files_for_venv()
     #     env.create_files_for_tests()
 
-    with ComposeEnv() as env:
-        try:
-            env.copy_struct_project()
-            env.create_files_for_compose(testing=True)
-            env.start_compose()
-        except KeyboardInterrupt:
-            logger.info('Ctrl+C pressed. Except KeyboardInterrupt.')
-            env.stop_compose()
-            sys.exit(1)
+    # with ComposeEnv() as env:
+    #     try:
+    #         env.copy_struct_project()
+    #         env.create_files_for_compose(testing=True)
+    #         env.start_compose()
+    #     except KeyboardInterrupt:
+    #         logger.info('Ctrl+C pressed. Except KeyboardInterrupt.')
+    #         env.stop_compose()
+    #         sys.exit(1)
 
         # sys.exit()
 
@@ -67,3 +77,4 @@ if __name__ == '__main__':
         #         logger.info(f'result of NER for model {avalable_model} is {result1_str}')
         #     else:
         #         logger.info(f'module didn`t get NER data')
+
