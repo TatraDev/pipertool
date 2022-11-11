@@ -68,6 +68,9 @@ def stop_container(docker_client, container_name):
     except docker.errors.APIError:
         logger.error(f'error while stop container {container_name}')
         return False
+    except Exception as e:
+        logger.error(f'non defined exeption {e}')
+        return False        
 
 
 def remove_container(docker_client, container_name):
@@ -83,6 +86,9 @@ def remove_container(docker_client, container_name):
         logger.error(f'error while remove container {container_name}')
         logger.error(de)
         return False
+    except Exception as e:
+        logger.error(f'non defined exeption {e}')
+        return False        
 
 
 def stop_and_rm_container(docker_client, container_name):
@@ -212,15 +218,20 @@ def build_image(path: str, tag):
         #     logger.info(f'executor build_image: {log}')
         # logger.info(f'image is {image}')
 
-    except (BuildError, APIError) as e:
-        logger.error('error while build_image:')
+    except BuildError as e:
+        logger.error('BuildError while build_image:')
         for line in e.build_log:
             if 'stream' in line:
                 logger.error(line['stream'].strip())
         sys.exit()
 
+    except APIError as e:
+        logger.error('APIError while build_image: server returned error')
+        sys.exit()
 
-
+    except Exception as e:
+        logger.error(f'non defined exeption {e}')
+        sys.exit()
 
 def run_container(image: str, ports: Dict[int, int]):
     '''Run Docker container'''
