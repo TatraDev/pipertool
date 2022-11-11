@@ -12,7 +12,7 @@ from piper.services import (
     StringValue,
     TesseractRecognizer,
     FaceDetector,
-    # TestMessageAdder,
+    TestMessageAdder,
 )
 
 from piper.utils import tesrct_utils as tu
@@ -20,33 +20,33 @@ from piper.utils import tesrct_utils as tu
 logger.add("file.log", level="INFO", backtrace=True, diagnose=True, rotation='5 MB')
 
 if __name__ == '__main__':
-    # cfg = get_configuration()
-    # loop = asyncio.get_event_loop()
-    # with CurrentEnv() as env:
-    #     x = StringValue(value="hello, world")
-    #     adder = TestMessageAdder(appender="!", port=cfg.docker_app_port)
-    #     result = loop.run_until_complete(adder(x))
-    #     print(result)
-
-    # x = StringValue(value="hello, world")
-    # adder = TestMessageAdder(appender="!", port=cfg.docker_app_port)
-    # result = loop.run_until_complete(adder(x))
-    # print(result)
-    # adder.rm_container()
-
-    logger.info(f'main here {time.time()}')
     cfg = get_configuration()
-
-    print(cfg.path)
-
     loop = asyncio.get_event_loop()
-    with DockerEnv() as env:
-        # object created
-        # recognizer = TesseractRecognizer(port=cfg.docker_app_port)
-        recognizer = FaceDetector(port=cfg.docker_app_port)
+    with CurrentEnv() as env:
+        x = StringValue(value="hello, world")
+        adder = TestMessageAdder(appender="!", port=cfg.docker_app_port)
+        result = loop.run_until_complete(adder(x))
+        print(result)
+
+    x = StringValue(value="hello, world")
+    adder = TestMessageAdder(appender="!", port=cfg.docker_app_port)
+    result = loop.run_until_complete(adder(x))
+    print(result)
+    adder.rm_container()
+
+    # logger.info(f'main here {time.time()}')
+    # cfg = get_configuration()
+
+    # print(cfg.path)
+
+    # loop = asyncio.get_event_loop()
+    # with DockerEnv() as env:
+    #     # object created
+    #     # recognizer = TesseractRecognizer(port=cfg.docker_app_port)
+    #     recognizer = FaceDetector(port=cfg.docker_app_port)
     
-        result = loop.run_until_complete(recognizer())
-        logger.info(f'result of recognition is {result}')
+    #     result = loop.run_until_complete(recognizer())
+    #     logger.info(f'result of recognition is {result}')
 
     # with VirtualEnv() as env:
     #     env.copy_struct_project()
