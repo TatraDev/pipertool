@@ -1,16 +1,16 @@
-from piper.configurations import get_configuration
-
-import sys
-import time
-
 import docker
-# from loguru import logger
-from piper.utils.logger_utils import logger
+import time
+import sys
+from loguru import logger
+
+from typing import Dict
+from docker.errors import APIError, BuildError
+from piper.configurations import get_configuration
 
 cfg = get_configuration()
 
-
 def get_image(docker_client, image_name):
+    '''Get Python object of Docker image by name'''
     try:
         cur_image = docker_client.images.get(image_name)
         return cur_image
@@ -20,6 +20,7 @@ def get_image(docker_client, image_name):
 
 
 def delete_image(docker_client, image_tag):
+    '''Delete Docker image by name'''
     try:
         docker_client.images.remove(image_tag, force=True)
         return True
@@ -29,6 +30,7 @@ def delete_image(docker_client, image_tag):
 
 
 def get_container(docker_client, container_name):
+    '''Get Python object of Docker container by name'''
     try:
         cur_container = docker_client.containers.get(container_name)
         return cur_container
@@ -39,8 +41,8 @@ def get_container(docker_client, container_name):
         logger.error(f'non defined exeption {e}')
         return False
 
-
 def get_container_with_status(docker_client, container_name):
+    '''Get Python object of Docker container by name with its status and ID'''
     try:
         cur_container = docker_client.containers.get(container_name)
         if cur_container:
@@ -54,8 +56,8 @@ def get_container_with_status(docker_client, container_name):
         logger.error(f'non defined exeption {e}')
         return False        
 
-
 def stop_container(docker_client, container_name):
+    '''Stop Docker container by name'''
     try:
         cur_container = docker_client.containers.get(container_name)
         cur_container.stop()
@@ -66,9 +68,13 @@ def stop_container(docker_client, container_name):
     except docker.errors.APIError:
         logger.error(f'error while stop container {container_name}')
         return False
+    except Exception as e:
+        logger.error(f'non defined exeption {e}')
+        return False        
 
 
 def remove_container(docker_client, container_name):
+    '''Remove stopped Docker container by name'''
     try:
         cur_container = docker_client.containers.get(container_name)
         cur_container.remove(v=True, force=True)
@@ -80,9 +86,13 @@ def remove_container(docker_client, container_name):
         logger.error(f'error while remove container {container_name}')
         logger.error(de)
         return False
+    except Exception as e:
+        logger.error(f'non defined exeption {e}')
+        return False        
 
 
 def stop_and_rm_container(docker_client, container_name):
+    '''Stop and remove Docker container by name'''
     # get container
     cur_container = get_container(docker_client, container_name)
 
@@ -116,6 +126,7 @@ def stop_and_rm_container(docker_client, container_name):
 
 
 def image_find_and_rm(docker_client, image_tag):
+    '''Remove Docker image by name'''
     cur_img = get_image(docker_client, image_tag)
     logger.info(cur_img)
     if cur_img:
@@ -129,8 +140,10 @@ def image_find_and_rm(docker_client, image_tag):
         return True
 
 
-def create_image_and_container_by_dockerfile(docker_client: docker.DockerClient, path, image_tag, container_name, port):
-    # should be deleted
+def create_image_and_container_by_dockerfile(docker_client, path, image_tag, container_name, port):
+    '''Create Docker container from Dockerfile. If container exists it will be deleted with image'''
+
+    # delete existing container
     status = stop_and_rm_container(docker_client, container_name)
 
     cur_cont = get_container(docker_client, container_name)
@@ -158,10 +171,7 @@ def create_image_and_container_by_dockerfile(docker_client: docker.DockerClient,
 
             # run container
             try:
-                container = docker_client.containers.run(image_tag,
-                                                         name=container_name,
-                                                         detach=True,
-                                                         ports={8080: port})
+                container = docker_client.containers.run(image_tag, name=container_name, detach=True, ports={8080:port})
                 for log in container.logs():
                     logger.debug(log)
                 logger.info(f'container {container} created')
@@ -180,6 +190,9 @@ def create_image_and_container_by_dockerfile(docker_client: docker.DockerClient,
                         sys.exit()
                     time.sleep(cfg.docker_wait_on_iter)
 
+                return container
+
+
             except docker.errors.APIError as api_e:
                 logger.error(f'eroror while run container {container_name}')
                 logger.error(str(api_e))
@@ -187,3 +200,46 @@ def create_image_and_container_by_dockerfile(docker_client: docker.DockerClient,
         else:
             logger.error(f'error while del image {image_tag}')
             sys.exit()
+
+
+def build_image(path: str, tag):
+    '''Build Docker image from Dockerfile'''
+    client = docker.DockerClient(base_url='unix://var/run/docker.sock')
+    logger.info('build start!')
+
+    try:
+        print(path)
+        print(tag)
+        image, logs = client.images.build(path=path,
+                                        tag=tag,
+                                        quiet=False,
+                                        timeout=120)
+        # for log in logs:
+        #     logger.info(f'executor build_image: {log}')
+        # logger.info(f'image is {image}')
+
+    except BuildError as e:
+        logger.error('BuildError while build_image:')
+        for line in e.build_log:
+            if 'stream' in line:
+                logger.error(line['stream'].strip())
+        sys.exit()
+
+    except APIError as e:
+        logger.error('APIError while build_image: server returned error')
+        sys.exit()
+
+    except Exception as e:
+        logger.error(f'non defined exeption {e}')
+        sys.exit()
+
+def run_container(image: str, ports: Dict[int, int]):
+    '''Run Docker container'''
+    client = docker.DockerClient(base_url='unix://var/run/docker.sock')
+    container = client.containers.run(image, detach=True, ports=ports)
+    for log in container.logs():
+        logger.info(f'executor run_container: {log}')
+    logger.info(f'container is {container}')
+    time.sleep(10)
+
+    return container
