@@ -126,7 +126,7 @@ By submitting a pull request to this project, you agree to license your contribu
 
 
 
-.. |Banner| image:: https://static.tildacdn.com/tild3434-6665-4638-a432-626636353134/illistration.svg
+.. |Banner| image:: https://github.com/TatraDev/pipertool/blob/main/piper_logo.jpg
    :target: http://pipertool.org/
    :alt: Piper logo
 
