@@ -1,39 +1,39 @@
-from fastapi import FastAPIExecutor
-from piper import envs
+from piper.base.executors import FastAPIExecutor
+from piper.services import StringValue, ListOfStringsObject
+
+from abc import abstractmethod
 
 import torch
 import requests
+import PIL.Image
 import clip
-import PIL
 
-class ClipExecutor(FastAPIExecutor): 
+def download_picture(url) -> PIL.Image.Image:
+    return PIL.Image.open(requests.get(url, stream=True).raw)
 
-    def __init__(self, url:str, text_snippets:list[str]):
-            self.url = url
-            self.text_snippets = text_snippets
+
+class CLIPExecutor(FastAPIExecutor): 
+
+    def __init__(self, **kwargs):
             self.model = "ViT-B/32"
+            super().__init__(**kwargs)
 
-    def download_picture(self) -> PIL.Image.Image:
-        return PIL.Image.open(requests.get(self.url, stream=True).raw)
+    async def run(self, url:StringValue, text_snippets:ListOfStringsObject) -> list:
 
-    def do_clip(self) -> list:
         device = "cuda" if torch.cuda.is_available() else "cpu"
         model, preprocess = clip.load(self.model, device=device)
 
-        text = clip.tokenize(self.text_snippets).to(device)
-        image_input = ClipExecutor.download_picture(self)
+        text = clip.tokenize(text_snippets.value).to(device)
+        image_input = download_picture(url.value)
         image_input = preprocess(image_input).unsqueeze(0).to(device)
 
         with torch.no_grad():
             logits_per_image, _ = model(image_input, text)
-            probs = logits_per_image.softmax(dim=-1).cpu().numpy()
-
-        return list(zip(self.text_snippets, probs))
-
-
-with envs.DockerEnv(): 
-    url = 'https://cdn.kanobu.ru/games/f8ffb106-1d6b-497c-8b12-3943d570ddc3.jpg'
-    texts = ["hulk", "iron men", "black widow", "avengers"]
-    res = ClipExecutor(url, texts).do_clip()
-    print(res)
-       
+            probs = logits_per_image.softmax(dim=-1).cpu().numpy().squeeze()
+            probs = [round(item, 3) for item in probs]
+        
+        return str(list(zip(text_snippets.value, probs)))
+        
+            
+    async def __call__(self, url:StringValue, text_snippets:ListOfStringsObject) -> list:
+        return await CLIPExecutor.run(self, url, text_snippets)
