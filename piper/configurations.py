@@ -7,6 +7,7 @@ class Configuration:
     piper_path: str = "piper"
     default_env: str = "compose"
     docker_app_port: int = 8788
+    docker_build_timeout: int = 1000
 
     name_venv: str = "venv_test"
     number: int = 10

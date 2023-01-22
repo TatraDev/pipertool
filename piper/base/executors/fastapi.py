@@ -21,6 +21,7 @@ import docker
 import requests
 from pydantic import BaseModel  # , BytesObject, ListOfStringsObject
 
+cfg = get_configuration()
 
 def add_packages_to_install(packages_list):
     row = f'RUN apt install -y {" ".join(packages_list)} \n'
@@ -58,7 +59,7 @@ def build_image(path: str, docker_image):
     image, logs = client.images.build(path=path,
                                       tag=docker_image.tag,
                                       quiet=False,
-                                      timeout=20)
+                                      timeout=cfg.docker_build_timeout)
     for log in logs:
         logger.info(f'executor build_image: {log}')
     logger.info(f'image is {image}')
