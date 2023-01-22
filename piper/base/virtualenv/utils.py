@@ -1,8 +1,7 @@
-import os
+from piper.configurations import get_configuration
+from piper.base.rendering import Render
 
-import jinja2
-
-from piper.utils.logger_utils import logger
+cfg = get_configuration()
 
 
 class VenvPython:
@@ -21,14 +20,8 @@ class VenvPython:
         """
         Render bash script for create and activate venv
         """
-        logger.info('Render bash script for create and activate venv')
-
-        template_dir = os.path.join(os.path.dirname(__file__), 'templates')
-        jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
-                                       trim_blocks=True,
-                                       lstrip_blocks=True)
-        template = jinja_env.get_template('bash-create-venv.j2')
-        return template.render(
+        venv_bash_render = Render('bash-create-venv.j2')
+        return venv_bash_render.render(
             name_path=self.name_path,
             name_venv=self.name_venv,
             number=self.number,
@@ -39,27 +32,15 @@ class VenvPython:
         """
         Render main file for virtual env logic
         """
-        logger.info('Render main file for virtual env logic')
-
-        template_dir = os.path.join(os.path.dirname(__file__), 'templates')
-        jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
-                                       trim_blocks=True,
-                                       lstrip_blocks=True)
-        template = jinja_env.get_template('python-script-venv.j2')
-        return template.render()
+        venv_python_render = Render('python-script-venv.j2')
+        return venv_python_render.render()
 
     def render_tests_bash(self):
         """
         Render bash script for create and activate venv
         """
-        logger.info('Render bash script for create and activate venv')
-
-        template_dir = os.path.join(os.path.dirname(__file__), 'templates')
-        jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
-                                       trim_blocks=True,
-                                       lstrip_blocks=True)
-        template = jinja_env.get_template('bash-create-tests.j2')
-        return template.render(
+        bash_create_render = Render('bash-create-tests.j2')
+        return bash_create_render.render(
             name_venv=self.name_venv,
         )
 
@@ -67,13 +48,7 @@ class VenvPython:
         """
         Render bash script for create and activate venv
         """
-        logger.info('Render bash script for create and activate venv')
-
-        template_dir = os.path.join(os.path.dirname(__file__), 'templates')
-        jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
-                                       trim_blocks=True,
-                                       lstrip_blocks=True)
-        template = jinja_env.get_template('python-script-tests.j2')
-        return template.render(
+        python_tests_render = Render('python-script-tests.j2')
+        return python_tests_render.render(
             number=self.number,
         )

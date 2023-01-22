@@ -1,8 +1,7 @@
-import os
+from piper.configurations import get_configuration
+from piper.base.rendering import Render
 
-import jinja2
-
-from piper.utils.logger_utils import logger
+cfg = get_configuration()
 
 
 class ComposeServices:
@@ -18,29 +17,17 @@ class ComposeServices:
         """
         Render main file for fastapi
         """
-        logger.info('Render main file for fastapi in compose services')
-
-        template_dir = os.path.join(os.path.dirname(__file__), 'templates')
-        jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
-                                       trim_blocks=True,
-                                       lstrip_blocks=True)
-        template = jinja_env.get_template('python-fastapi-milvus.j2')
-        return template.render()
+        python_fastapi_milvus_render = Render('python-fastapi-milvus.j2')
+        return python_fastapi_milvus_render.render()
 
     def render_bash_start(self, testing: bool = False):
         """
         Render bash script for bash_start
         """
-        logger.info('Render bash script for bash_start')
-
-        template_dir = os.path.join(os.path.dirname(__file__), 'templates')
-        jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
-                                       trim_blocks=True,
-                                       lstrip_blocks=True)
-        template = jinja_env.get_template('bash-start-compose.j2')
+        bash_start_compose = Render('bash-start-compose.j2')
 
         compose_flag = '' if testing else '-d'
-        return template.render(
+        return bash_start_compose.render(
             name_path=self.name_path,
             compose_flag=compose_flag,
         )
@@ -49,14 +36,8 @@ class ComposeServices:
         """
         Render bash script for bash_stop
         """
-        logger.info('Render bash script for bash_stop')
-
-        template_dir = os.path.join(os.path.dirname(__file__), 'templates')
-        jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
-                                       trim_blocks=True,
-                                       lstrip_blocks=True)
-        template = jinja_env.get_template('bash-stop-compose.j2')
-        return template.render(
+        bash_stop_compose_render = Render('bash-stop-compose.j2')
+        return bash_stop_compose_render.render(
             name_path=self.name_path,
         )
 
@@ -65,25 +46,13 @@ class ComposeServices:
         """
         Render script for compose_services
         """
-        logger.info('Render script for compose_services')
-
-        template_dir = os.path.join(os.path.dirname(__file__), 'templates')
-        jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
-                                       trim_blocks=True,
-                                       lstrip_blocks=True)
-        template = jinja_env.get_template('compose-services.j2')
-        return template.render()
+        compose_services_render = Render('compose-services.j2')
+        return compose_services_render.render()
 
     @staticmethod
     def render_dockerfile():
         """
         Render dockerfile
         """
-        logger.info('Render dockerfile')
-
-        template_dir = os.path.join(os.path.dirname(__file__), 'templates')
-        jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
-                                       trim_blocks=True,
-                                       lstrip_blocks=True)
-        template = jinja_env.get_template('dockerfile.j2')
-        return template.render()
+        dockerfile_render = Render('dockerfile.j2')
+        return dockerfile_render.render()

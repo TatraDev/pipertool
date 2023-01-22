@@ -5,6 +5,7 @@ class Configuration:
     path: str = f"./applications/piper_project_{time.time_ns()}/"
     test_path: str = f"./applications/piper_project_{time.time_ns()}/"
     piper_path: str = "piper"
+    templates_path: str = "templates"
     default_env: str = "compose"
     docker_app_port: int = 8788
     docker_build_timeout: int = 1000

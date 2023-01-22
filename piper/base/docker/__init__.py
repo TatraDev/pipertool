@@ -1,6 +1,7 @@
-import os
+from piper.configurations import get_configuration
+from piper.base.rendering import Render
 
-import jinja2
+cfg = get_configuration()
 
 
 class PythonImage:
@@ -12,21 +13,16 @@ class PythonImage:
         self.template_file = template_file
         self.run_rows = run_rows
         self.post_install_lines = post_install_lines
+        self._render = Render(template_file)
 
     def render(self):
         """
         Render docker template
         """
-        template_dir = os.path.join(os.path.dirname(__file__), 'images')
-        jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
-                                       trim_blocks=True,
-                                       lstrip_blocks=True)
-        template = jinja_env.get_template(self.template_file)
-        return template.render(cmd=self.cmd,
-                               python_docker_version=self.python_docker_version,
-                               run_command_lines=self.run_rows,
-                               post_install_lines=self.post_install_lines)
-
+        return self._render.render(cmd=self.cmd,
+                                   python_docker_version=self.python_docker_version,
+                                   run_command_lines=self.run_rows,
+                                   post_install_lines=self.post_install_lines)
 
 # class PythonTesseractImage:
 
