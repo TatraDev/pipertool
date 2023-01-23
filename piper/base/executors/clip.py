@@ -8,8 +8,6 @@ import requests
 import PIL.Image
 import clip
 
-import logging
-
 def download_picture(url) -> PIL.Image.Image:
     return PIL.Image.open(requests.get(url, stream=True).raw)
 
