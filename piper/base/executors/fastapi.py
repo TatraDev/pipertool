@@ -15,6 +15,7 @@ import time
 from abc import ABC, abstractmethod
 from typing import Dict
 from distutils.dir_util import copy_tree
+import subprocess
 
 import aiohttp
 import docker
@@ -22,6 +23,7 @@ import requests
 from pydantic import BaseModel  # , BytesObject, ListOfStringsObject
 
 cfg = get_configuration()
+
 
 def add_packages_to_install(packages_list):
     row = f'RUN apt install -y {" ".join(packages_list)} \n'
@@ -49,20 +51,47 @@ def write_requirements(path, requirements):
         output.write("\n".join(requirements))
 
 
-def build_image(path: str, docker_image):
-    client = docker.DockerClient(base_url='unix://var/run/docker.sock')
+def _build_image_old(path: str, docker_image):
+    """
+    deprecated:
+    this doesn't stream logs from docker build
+    TODO: fix it in build_image_old and use docker-py
+    """
+    client = docker.APIClient(base_url='unix://var/run/docker.sock')
     image = docker_image.render()
-    print(f"{path}Dockerfile")
+
     with open(f"{path}Dockerfile", "w") as output:
         output.write(image)
 
-    image, logs = client.images.build(path=path,
-                                      tag=docker_image.tag,
-                                      quiet=False,
-                                      timeout=cfg.docker_build_timeout)
-    for log in logs:
-        logger.info(f'executor build_image: {log}')
-    logger.info(f'image is {image}')
+    streamer = client.build(path=path,
+                            decode=True,
+                            tag=docker_image.tag,
+                            quiet=False,
+                            buildargs={"progress": "plain"},
+                            timeout=cfg.docker_build_timeout)
+    for chunk in streamer:
+        logger.info(chunk)
+
+    logger.info(f'piper built image {docker_image.tag}')
+
+
+def build_image(path: str, docker_image):
+    """
+    Build docker image
+    OLD build_image_old doesn't stream logs from docker build
+    TODO: fix it in build_image_old and use docker-py instead of Popen
+    """
+    image = docker_image.render()
+
+    with open(f"{path}Dockerfile", "w") as output:
+        output.write(image)
+    cmd = ['docker', 'build',  "--progress", "plain", '-t', docker_image.tag, path]
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    with process.stdout:
+        for line in iter(process.stdout.readline, b''):
+            logger.info(line)
+
+    logger.info(f'piper built image {docker_image.tag}')
 
 
 def run_container(image: str, ports: Dict[int, int]):
@@ -142,7 +171,7 @@ class FastAPIExecutor(HTTPExecutor):
         super().__init__('localhost', port, self.base_handler)
 
     async def aio_call(self, *args, **kwargs):
-        return await super().__call__(*args, ** kwargs)
+        return await super().__call__(*args, **kwargs)
 
     def __call__(self, *args, **kwargs):
         loop = asyncio.get_event_loop()
