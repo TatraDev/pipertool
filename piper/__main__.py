@@ -24,7 +24,8 @@ def main(type_command: str, env_type: str):
             with ComposeEnv() as env:
                 env.stop_compose()
     else:
-        raise NotImplementedError(f'{env_type} not released in this version pipertool')
+        raise NotImplementedError(f'{env_type} '
+                                  f'not released in this version pipertool')
 
 
 if __name__ == '__main__':

@@ -3,7 +3,7 @@ from piper.base.backend.utils import (render_fast_api_backend,
                                       render_fast_api_tsrct_backend)
 from piper.base.docker import PythonImage
 from piper.configurations import get_configuration
-from piper.envs import get_env, is_current_env, is_docker_env, Env
+from piper.envs import is_docker_env
 from piper.utils import docker_utils
 from piper.utils.logger_utils import logger
 from piper.base.executors import HTTPExecutor
@@ -17,7 +17,6 @@ import time
 
 import docker
 import requests
-from pydantic import BaseModel  # , BytesObject, ListOfStringsObject
 
 cfg = get_configuration()
 
@@ -34,7 +33,8 @@ def wait_for_fast_api_app_start(host, external_port, wait_on_iter, n_iters):
     while True:
         try:
             r = requests.post(f"http://{host}:{external_port}/health_check/")
-            logger.info(f'health_check status_code:{r.status_code}, reason:{r.reason}')
+            logger.info(f'health_check status_code:{r.status_code}, '
+                        f'reason:{r.reason}')
             if r.status_code == 200:
                 break
         except Exception as e:
@@ -48,7 +48,8 @@ def wait_for_fast_api_app_start(host, external_port, wait_on_iter, n_iters):
 
 
 class FastAPIExecutor(HTTPExecutor):
-    requirements = ["gunicorn", "fastapi", "uvicorn", "aiohttp", "docker", "Jinja2", "pydantic", "loguru"]
+    requirements = ["gunicorn", "fastapi", "uvicorn", "aiohttp",
+                    "docker", "Jinja2", "pydantic", "loguru"]
     base_handler = "run"
 
     def __init__(self, port: int = -1, **service_kwargs):
@@ -70,8 +71,12 @@ class FastAPIExecutor(HTTPExecutor):
             copy_scripts(project_output_path, self.scripts())
             self.create_fast_api_files(project_output_path, **service_kwargs)
 
-            docker_image = PythonImage(self.image_tag, "3.9", cmd=f"./run.sh", template_file='default-python.j2',
-                                       run_rows="", post_install_lines="")
+            docker_image = PythonImage(tag=self.image_tag,
+                                       python_docker_version="3.9",
+                                       cmd=f"./run.sh",
+                                       template_file='default-python.j2',
+                                       run_rows="",
+                                       post_install_lines="")
             build_image(project_output_path, docker_image)
 
             # create and run docker container
@@ -121,7 +126,8 @@ class FastAPIExecutor(HTTPExecutor):
         write_requirements(path, self.requirements)
 
         gunicorn = "#!/bin/bash \n" \
-                   f"gunicorn -b 0.0.0.0:8080 --workers {cfg.n_gunicorn_workers} main:app --worker-class uvicorn.workers.UvicornWorker --preload --timeout 120"
+                   f"gunicorn -b 0.0.0.0:8080 --workers {cfg.n_gunicorn_workers} " \
+                   f"main:app --worker-class uvicorn.workers.UvicornWorker --preload --timeout 120"
         with open(f"{path}/run.sh", "w") as output:
             output.write(gunicorn)
 

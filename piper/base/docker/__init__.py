@@ -6,7 +6,13 @@ cfg = get_configuration()
 
 class PythonImage:
 
-    def __init__(self, tag, python_docker_version, cmd, template_file, run_rows, post_install_lines):
+    def __init__(self,
+                 tag: str,
+                 python_docker_version: str,
+                 cmd: str,
+                 template_file: str,
+                 run_rows,
+                 post_install_lines):
         self.tag = tag
         self.python_docker_version = python_docker_version
         self.cmd = cmd

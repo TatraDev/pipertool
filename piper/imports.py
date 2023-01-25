@@ -43,9 +43,11 @@ def _piper_was_touched_in_frame(frame_before=1):
         all_variables = [v for v in all_variables.values() if v is not None]
         if len(all_variables) > 0:
             variables_have_piper_package = any("piper" in v.__package__ \
-                    for v in all_variables if hasattr(v, "__package__") and type(v.__package__) == str)
+                                               for v in all_variables if
+                                               hasattr(v, "__package__") and type(v.__package__) == str)
             variables_have_piper_module = any("piper" in v.__module__ \
-                    for v in all_variables if hasattr(v, "__module__") and type(v.__module__) == str)
+                                              for v in all_variables if
+                                              hasattr(v, "__module__") and type(v.__module__) == str)
             result = variables_have_piper_module | variables_have_piper_package
 
     return result
@@ -59,26 +61,43 @@ def _from_piper_file_but_not_piper(name: str, globals={}):
     return result
 
 
-def try_import(name, globals={}, locals={}, fromlist=[], level=0):
+def try_import(name,
+               globals={},
+               locals={},
+               fromlist=[],
+               level=0
+               ):
     """
-    This import replace real Python import with fake import which returns warning only and PiperDummyModule.
-    This works for everything under piper/ frameworks files by filename but not for piper import (like piper.base)
-    And this also works for every file where you import something from piper firstly !
+    This import replace real Python import
+    with fake import which returns
+    warning only and PiperDummyModule.
+    This works for everything under piper/ frameworks files
+    by filename but not for piper import (like piper.base)
+    And this also works for every file where
+    you import something from piper firstly !
     """
-    if not (configuration.ignore_import_errors or configuration.safe_import_activated):
-        logger.info("Ignore import errors is off in Configuration and deactivated")
+    if not (configuration.ignore_import_errors
+            or configuration.safe_import_activated):
+        logger.info("Ignore import errors is off "
+                    "in Configuration and deactivated")
         return real_import(name, globals, locals, fromlist, level)
 
     piper_was_touched_in_previous_frame = _piper_was_touched_in_frame(frame_before=1)
-    need_to_catch = piper_was_touched_in_previous_frame or _from_piper_file_but_not_piper(name, globals)
+    need_to_catch = piper_was_touched_in_previous_frame \
+                    or _from_piper_file_but_not_piper(name, globals)
 
     if need_to_catch:
-        logger.info(f"Piper runs safe import for library {name} in piper file {globals['__file__']} ")
+        logger.info(f"Piper runs safe import "
+                    f"for library {name} "
+                    f"in piper file {globals['__file__']} ")
         try:
             return real_import(name, globals, locals, fromlist, level)
         except ImportError as e:
-            logger.warning(f"Piper ignores ImportError and module {name} "
-                           f": replaced by dummy module. ImportError: {e.with_traceback(None)}")
+            logger.warning(
+                f"Piper ignores ImportError and module {name} "
+                f": replaced by dummy module. "
+                f"ImportError: {e.with_traceback(None)}"
+            )
             module = PiperDummyModule(name)
             return module
     else:
@@ -102,13 +121,18 @@ def _set_import_functions(ignore: bool = True):
 def activate_safe_import():
     """
     Activate piper safe import with try_import function.
-    Piper needs safe import to ignore imports in Executors examples.
-    For instance if you want to use Pandas in your CustomExecutor normally you have to *import pandas*
-    But we don't want to install everything for every executor in default Python (where Piper is installed)
+    Piper needs safe import to
+    ignore imports in Executors examples.
+    For instance if you want to use Pandas in your
+    CustomExecutor normally you have to *import pandas*
+    But we don't want to install everything for
+    every executor in default Python (where Piper is installed)
     For that you have to ignore every Executors dependencies.
 
-    Otherwise, you can wrap buy yourself every Executors import with try_import
-    or you can use directly only *requirements* field in your CustomExecutor.
+    Otherwise, you can wrap by yourself
+    every Executors import with try_import
+    or you can use directly only *requirements*
+    field in your CustomExecutor.
 
     """
     logger.info(f"Piper activates safe import")
@@ -124,7 +148,8 @@ def deactivate_safe_import():
 
 class safe_import:
     """
-    Context manager to activate safe import on some part of imports.
+    Context manager to activate safe import
+    on some part of imports.
     For instance:
 
         with safe_import():
