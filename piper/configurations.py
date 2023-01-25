@@ -19,7 +19,7 @@ class Configuration:
 
     # start time and counter
     wait_on_iter = 0.5
-    n_iters = 10
+    n_iters = 60
 
     # docker start time and counter
     docker_wait_on_iter = 0.5

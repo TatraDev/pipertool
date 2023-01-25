@@ -7,7 +7,8 @@ from piper.envs import get_env, is_current_env, is_docker_env, Env
 from piper.utils import docker_utils
 from piper.utils.logger_utils import logger
 from piper.base.executors import HTTPExecutor
-from piper.base.executors.utils import write_requirements, copy_piper, copy_scripts, build_image, add_row, add_packages_to_install
+from piper.base.executors.utils import write_requirements, copy_piper, \
+    copy_scripts, build_image, add_row, add_packages_to_install, get_free_port
 
 import asyncio
 import inspect
@@ -50,11 +51,15 @@ class FastAPIExecutor(HTTPExecutor):
     requirements = ["gunicorn", "fastapi", "uvicorn", "aiohttp", "docker", "Jinja2", "pydantic", "loguru"]
     base_handler = "run"
 
-    def __init__(self, port: int = 8080, **service_kwargs):
+    def __init__(self, port: int = -1, **service_kwargs):
         self.container = None
         self.image_tag = 'piper:latest'
         self.id = hash(self)
         self.container_name = f"piper_FastAPI_{self.id}"
+
+        if port < 0:
+            port = get_free_port()
+        self.port = port
 
         if is_docker_env():
             docker_client = docker.DockerClient(base_url='unix://var/run/docker.sock')
@@ -79,7 +84,7 @@ class FastAPIExecutor(HTTPExecutor):
                 port
             )
 
-            wait_for_fast_api_app_start('localhost', cfg.docker_app_port, cfg.wait_on_iter, cfg.n_iters)
+            wait_for_fast_api_app_start('localhost', self.port, cfg.wait_on_iter, cfg.n_iters)
         else:
             # TODO: Local ENVIRONMENT checks
             pass

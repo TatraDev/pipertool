@@ -5,19 +5,19 @@ import time
 from typing import Dict
 from distutils.dir_util import copy_tree
 import subprocess
+import socket
 
 import docker
-
 
 cfg = get_configuration()
 
 
-def add_packages_to_install(packages_list):
+def add_packages_to_install(packages_list) -> str:
     row = f'RUN apt install -y {" ".join(packages_list)} \n'
     return row
 
 
-def add_row(row):
+def add_row(row) -> str:
     return f'{row} \n'
 
 
@@ -72,7 +72,7 @@ def build_image(path: str, docker_image):
 
     with open(f"{path}Dockerfile", "w") as output:
         output.write(image)
-    cmd = ['docker', 'build',  "--progress", "plain", '-t', docker_image.tag, path]
+    cmd = ['docker', 'build', "--progress", "plain", '-t', docker_image.tag, path]
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     with process.stdout:
         for line in iter(process.stdout.readline, b''):
@@ -90,3 +90,9 @@ def run_container(image: str, ports: Dict[int, int]):
     time.sleep(10)
 
     return container
+
+
+def get_free_port() -> int:
+    s = socket.socket(socket.AF_INET, type=socket.SOCK_STREAM)
+    s.bind(('', 0))
+    return s.getsockname()[1]
