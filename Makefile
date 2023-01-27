@@ -5,12 +5,16 @@ SHELL:=/usr/bin/env bash
 lint:
 	flake8 piper
 
+unit-services:
+	pytest -vs tests/services/chat_gpt.py
+
 unit:
 	pytest -vs tests/import_test.py
 	pytest -vs tests/base_executor_test.py
 	pytest -vs tests/base_test.py
 	pytest -vs tests/envs_test.py::TestCompose
 	pytest -vs tests/envs_test.py::TestVenv
+
 
 package:
 	pip check

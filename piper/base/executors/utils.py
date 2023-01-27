@@ -6,6 +6,8 @@ from typing import Dict
 from distutils.dir_util import copy_tree
 import subprocess
 import socket
+import sys
+import requests
 
 import docker
 
@@ -96,3 +98,29 @@ def get_free_port() -> int:
     s = socket.socket(socket.AF_INET, type=socket.SOCK_STREAM)
     s.bind(('', 0))
     return s.getsockname()[1]
+
+
+def wait_for_fast_api_app_start(host, external_port, wait_on_iter, n_iters):
+    """
+        wait for fast api app will be loaded
+        external_port -
+        wait_on_iter - seconds between health_check requests
+        n_iters - total health_check requests
+    """
+    logger.info('waiting for FastAPI app start')
+    i = 0
+    while True:
+        try:
+            r = requests.post(f"http://{host}:{external_port}/health_check/")
+            logger.info(f'health_check status_code:{r.status_code}, '
+                        f'reason:{r.reason}')
+            if r.status_code == 200:
+                break
+        except Exception as e:
+            logger.error(f"Exception while starting FastAPI app {e}")
+            time.sleep(wait_on_iter)
+
+        if i == n_iters:
+            logger.error('FastAPI app can`t start or n_iters too small')
+            sys.exit()
+        i += 1
