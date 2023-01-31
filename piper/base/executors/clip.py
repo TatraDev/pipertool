@@ -1,5 +1,5 @@
 from piper.base.executors import FastAPIExecutor
-from piper.services import StringValue
+from piper.services import StringValue, ListOfStringsObject
 
 from abc import abstractmethod
 
@@ -24,7 +24,7 @@ class CLIPExecutor(FastAPIExecutor):
             self.model = "ViT-B/32"
             super().__init__(**kwargs)             
 
-    async def run(self, url:float, text_snippets:float) -> list:   
+    async def run(self, url:StringValue, text_snippets:ListOfStringsObject) -> list:   
 
         url, text_snippets = url.value, text_snippets.value
         device = "cuda" if torch.cuda.is_available() else "cpu"

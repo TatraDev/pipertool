@@ -37,7 +37,7 @@ def _piper_was_touched_in_frame(frame_before=1):
     result = False
     f_locals = frame.f_locals
     f_globals = frame.f_globals
-    all_variables = f_locals or f_globals
+    all_variables = f_locals | f_globals
 
     if all_variables.values():
         all_variables = [v for v in all_variables.values() if v is not None]
