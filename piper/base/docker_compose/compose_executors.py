@@ -26,7 +26,8 @@ def write_requirements(path, requirements):
 
 
 class ComposeExecutor:
-    requirements = ["gunicorn", "fastapi", "uvicorn", "aiohttp", "Jinja2", "pydantic", "pymilvus", "numpy", "loguru"]
+    requirements = ["gunicorn", "fastapi", "uvicorn", "aiohttp",
+                    "Jinja2", "pydantic", "pymilvus", "numpy", "loguru"]
 
     def __init__(self):
         logger.info('ComposeExecutor init with is_compose_env()')

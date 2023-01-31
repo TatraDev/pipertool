@@ -3,76 +3,22 @@ from piper.base.backend.utils import (render_fast_api_backend,
                                       render_fast_api_tsrct_backend)
 from piper.base.docker import PythonImage
 from piper.configurations import get_configuration
-from piper.envs import get_env, is_current_env, is_docker_env, Env
+from piper.envs import is_docker_env
 from piper.utils import docker_utils
 from piper.utils.logger_utils import logger
 from piper.base.executors import HTTPExecutor
+from piper.base.executors.utils import write_requirements, copy_piper, \
+    copy_scripts, build_image, add_row, add_packages_to_install, get_free_port
 
 import asyncio
 import inspect
 import sys
 import time
-from abc import ABC, abstractmethod
-from typing import Dict
-from distutils.dir_util import copy_tree
 
-import aiohttp
 import docker
 import requests
-from pydantic import BaseModel  # , BytesObject, ListOfStringsObject
 
-
-def add_packages_to_install(packages_list):
-    row = f'RUN apt install -y {" ".join(packages_list)} \n'
-    return row
-
-
-def add_row(row):
-    return f'{row} \n'
-
-
-def copy_piper(path: str):
-    cfg = get_configuration()
-    copy_tree(cfg.piper_path, f"{path}piper")
-
-
-def copy_scripts(path: str, scripts: Dict[str, str]):
-    for script_name, script_path in scripts.items():
-        with open(f"{path}/{script_name}.py", "w") as output:
-            with open(script_path, "r") as current_file:
-                output.write(current_file.read())
-
-
-def write_requirements(path, requirements):
-    with open(f"{path}/requirements.txt", "w") as output:
-        output.write("\n".join(requirements))
-
-
-def build_image(path: str, docker_image):
-    client = docker.DockerClient(base_url='unix://var/run/docker.sock')
-    image = docker_image.render()
-    print(f"{path}Dockerfile")
-    with open(f"{path}Dockerfile", "w") as output:
-        output.write(image)
-
-    image, logs = client.images.build(path=path,
-                                      tag=docker_image.tag,
-                                      quiet=False,
-                                      timeout=20)
-    for log in logs:
-        logger.info(f'executor build_image: {log}')
-    logger.info(f'image is {image}')
-
-
-def run_container(image: str, ports: Dict[int, int]):
-    client = docker.DockerClient(base_url='unix://var/run/docker.sock')
-    container = client.containers.run(image, detach=True, ports=ports)
-    for log in container.logs():
-        logger.info(f'executor run_container: {log}')
-    logger.info(f'container is {container}')
-    time.sleep(10)
-
-    return container
+cfg = get_configuration()
 
 
 def wait_for_fast_api_app_start(host, external_port, wait_on_iter, n_iters):
@@ -87,7 +33,8 @@ def wait_for_fast_api_app_start(host, external_port, wait_on_iter, n_iters):
     while True:
         try:
             r = requests.post(f"http://{host}:{external_port}/health_check/")
-            logger.info(f'health_check status_code:{r.status_code}, reason:{r.reason}')
+            logger.info(f'health_check status_code:{r.status_code}, '
+                        f'reason:{r.reason}')
             if r.status_code == 200:
                 break
         except Exception as e:
@@ -101,14 +48,19 @@ def wait_for_fast_api_app_start(host, external_port, wait_on_iter, n_iters):
 
 
 class FastAPIExecutor(HTTPExecutor):
-    requirements = ["gunicorn", "fastapi", "uvicorn", "aiohttp", "docker", "Jinja2", "pydantic", "loguru"]
+    requirements = ["gunicorn", "fastapi", "uvicorn", "aiohttp",
+                    "docker", "Jinja2", "pydantic", "loguru"]
     base_handler = "run"
 
-    def __init__(self, port: int = 8080, **service_kwargs):
+    def __init__(self, port: int = -1, **service_kwargs):
         self.container = None
         self.image_tag = 'piper:latest'
         self.id = hash(self)
         self.container_name = f"piper_FastAPI_{self.id}"
+
+        if port < 0:
+            port = get_free_port()
+        self.port = port
 
         if is_docker_env():
             docker_client = docker.DockerClient(base_url='unix://var/run/docker.sock')
@@ -119,8 +71,12 @@ class FastAPIExecutor(HTTPExecutor):
             copy_scripts(project_output_path, self.scripts())
             self.create_fast_api_files(project_output_path, **service_kwargs)
 
-            docker_image = PythonImage(self.image_tag, "3.9", cmd=f"./run.sh", template_file='default-python.j2',
-                                       run_rows="", post_install_lines="")
+            docker_image = PythonImage(tag=self.image_tag,
+                                       python_docker_version="3.9",
+                                       cmd=f"./run.sh",
+                                       template_file='default-python.j2',
+                                       run_rows="",
+                                       post_install_lines="")
             build_image(project_output_path, docker_image)
 
             # create and run docker container
@@ -133,7 +89,7 @@ class FastAPIExecutor(HTTPExecutor):
                 port
             )
 
-            wait_for_fast_api_app_start('localhost', cfg.docker_app_port, cfg.wait_on_iter, cfg.n_iters)
+            wait_for_fast_api_app_start('localhost', self.port, cfg.wait_on_iter, cfg.n_iters)
         else:
             # TODO: Local ENVIRONMENT checks
             pass
@@ -141,7 +97,7 @@ class FastAPIExecutor(HTTPExecutor):
         super().__init__('localhost', port, self.base_handler)
 
     async def aio_call(self, *args, **kwargs):
-        return await super().__call__(*args, ** kwargs)
+        return await super().__call__(*args, **kwargs)
 
     def __call__(self, *args, **kwargs):
         loop = asyncio.get_event_loop()
@@ -155,6 +111,20 @@ class FastAPIExecutor(HTTPExecutor):
     def scripts(self):
         return {"service": inspect.getfile(self.__class__)}
 
+    def get_func_input(self):
+        import inspect
+
+        sig = inspect.signature(self.__class__.run)
+        sig_dict = dict()
+
+        for param in list(sig.parameters):
+            all_sig_parameters = str(sig.parameters[param]).split(': ')
+
+            if len(all_sig_parameters) == 2:
+                sig_dict[all_sig_parameters[0]] = all_sig_parameters[1]
+
+        return sig_dict
+
     def create_fast_api_files(self, path: str, **service_kwargs):
         cfg = get_configuration()
 
@@ -162,7 +132,7 @@ class FastAPIExecutor(HTTPExecutor):
                                           service_kwargs=dict(service_kwargs),
                                           scripts=self.scripts(),
                                           function_name=self.base_handler,
-                                          request_model="StringValue",
+                                          request_model=self.get_func_input(),
                                           response_model="StringValue")
         with open(f"{path}/main.py", "w") as output:
             output.write(backend)
@@ -170,7 +140,8 @@ class FastAPIExecutor(HTTPExecutor):
         write_requirements(path, self.requirements)
 
         gunicorn = "#!/bin/bash \n" \
-                   f"gunicorn -b 0.0.0.0:8080 --workers {cfg.n_gunicorn_workers} main:app --worker-class uvicorn.workers.UvicornWorker --preload --timeout 120"
+                   f"gunicorn -b 0.0.0.0:8080 --workers {cfg.n_gunicorn_workers} " \
+                   f"main:app --worker-class uvicorn.workers.UvicornWorker --preload --timeout 120"
         with open(f"{path}/run.sh", "w") as output:
             output.write(gunicorn)
 

@@ -14,12 +14,13 @@ async def health_check():
     return {"message": "health check"}
 
 with CurrentEnv():
-    service = {{ service_class }}( {% for k, v in service_kwargs.items() %} {{ k }}={{ v }}, {% endfor %} )
+    service = {{ service_class }}(
+                                 {% for k, v in service_kwargs.items() %} {{ k }}={{ v }}, {% endfor %})
 
     @app.post('/{{ function_name }}')
     async def {{ function_name }}(
-        request_model: {{ request_model }},
-    ):
-        result = await service.{{ function_name }}(request_model)
+                                  {% for k, v in request_model.items() %} {{ k }}:{{ v }}, {% endfor %}):
+
+        result = await service.{{ function_name }}({% for k, v in request_model.items() %} {{ k }}, {% endfor %}))
 
         return result.dict()

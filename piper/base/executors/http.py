@@ -35,18 +35,19 @@ class HTTPExecutor(BaseExecutor):
     def __init__(self, host: str, port: int, base_handler: str):
         self.host = host
         self.port = port
+        self.base_handler = base_handler
 
     @abstractmethod
     async def run(self, *args, **kwargs):
         pass
 
     async def __call__(self, *args, **kwargs):
-        logger.info(f'get_env() {get_env()}')
-        logger.info(f'is_current_env() {is_current_env()}')
+        logger.info(f'call in env {get_env()}')
+
         if is_current_env():
             return await self.run(*args, **kwargs)
         else:
-            function = "run"
+            function = self.base_handler
             request_dict = inputs_to_dict(*args, **kwargs)
             logger.info(f'request_dict is {request_dict}')
             async with aiohttp.ClientSession() as session:

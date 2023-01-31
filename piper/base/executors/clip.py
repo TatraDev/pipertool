@@ -15,18 +15,18 @@ def download_picture(url) -> PIL.Image.Image:
 class CLIPExecutor(FastAPIExecutor): 
     requirements = FastAPIExecutor.requirements + ["torch", "clip-by-openai", "requests", "Pillow"]
     '''
-    model args тут указать аргументы
+    model args:
+    -> url of the image
+    -> lsit of text descriptions
     '''
 
     def __init__(self, **kwargs):
             self.model = "ViT-B/32"
-            super().__init__(**kwargs)
-            
+            super().__init__(**kwargs)             
 
-    async def run(self, input_value:StringValue) -> list:   
-        
-        url, text_snippets = eval(input_value.value)
+    async def run(self, url:float, text_snippets:float) -> list:   
 
+        url, text_snippets = url.value, text_snippets.value
         device = "cuda" if torch.cuda.is_available() else "cpu"
         model, preprocess = clip.load(self.model, device=device)
 

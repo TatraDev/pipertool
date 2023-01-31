@@ -129,7 +129,13 @@ def image_find_and_rm(docker_client, image_tag):
         return True
 
 
-def create_image_and_container_by_dockerfile(docker_client: docker.DockerClient, path, image_tag, container_name, port):
+def create_image_and_container_by_dockerfile(
+        docker_client: docker.DockerClient,
+        path,
+        image_tag,
+        container_name,
+        port
+):
     # should be deleted
     status = stop_and_rm_container(docker_client, container_name)
 
@@ -176,7 +182,9 @@ def create_image_and_container_by_dockerfile(docker_client: docker.DockerClient,
                         break
 
                     if i == cfg.docker_n_iters:
-                        logger.error(f'container {container_name} can`t start, status is {container.status}')
+                        logger.error(f'container {container_name}'
+                                     f' can`t start,'
+                                     f' status is {container.status}')
                         sys.exit()
                     time.sleep(cfg.docker_wait_on_iter)
 
