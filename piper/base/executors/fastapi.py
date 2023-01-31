@@ -81,6 +81,18 @@ class FastAPIExecutor(HTTPExecutor):
     def scripts(self):
         return {"service": inspect.getfile(self.__class__)}
 
+    def get_func_input(self):
+        sig = inspect.signature(self.__class__.run)
+        sig_dict = dict()
+
+        for param in list(sig.parameters):
+            all_sig_parameters = str(sig.parameters[param]).split(': ')
+
+            if len(all_sig_parameters) == 2:
+                sig_dict[all_sig_parameters[0]] = all_sig_parameters[1]
+
+        return sig_dict
+
     def create_fast_api_files(self, path: str, **service_kwargs):
         cfg = get_configuration()
 
@@ -88,7 +100,7 @@ class FastAPIExecutor(HTTPExecutor):
                                           service_kwargs=dict(service_kwargs),
                                           scripts=self.scripts(),
                                           function_name=self.base_handler,
-                                          request_model="StringValue",
+                                          request_model=self.get_func_input(),
                                           response_model="StringValue")
         with open(f"{path}/main.py", "w") as output:
             output.write(backend)
