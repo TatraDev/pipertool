@@ -4,3 +4,4 @@ docker
 Jinja2
 pydantic
 loguru
+python-dotenv
