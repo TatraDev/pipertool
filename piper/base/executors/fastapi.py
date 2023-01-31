@@ -82,8 +82,6 @@ class FastAPIExecutor(HTTPExecutor):
         return {"service": inspect.getfile(self.__class__)}
 
     def get_func_input(self):
-        import inspect
-
         sig = inspect.signature(self.__class__.run)
         sig_dict = dict()
 
