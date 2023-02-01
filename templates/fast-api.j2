@@ -3,7 +3,7 @@ import time
 from fastapi import FastAPI, Request, status
 from piper.envs import CurrentEnv
 
-{% for script_name in scripts.keys() %}
+{% for script_name in meta_info.scripts.keys() %}
 from {{ script_name }} import *
 {% endfor %}
 
@@ -14,12 +14,20 @@ async def health_check():
     return {"message": "health check"}
 
 with CurrentEnv():
-    service = {{ service_class }}( {% for k, v in service_kwargs.items() %} {{ k }}={{ v }}, {% endfor %} )
+    service = {{ meta_info.class_name }}(
+        {% for k, v in meta_info.init_kwargs.items() %}
+        {{ k }}={{ v }},
+        {% endfor %}
+    )
 
-    @app.post('/{{ function_name }}')
-    async def {{ function_name }}(
-        request_model: {{ request_model }},
+    {% for async_function in meta_info.async_functions %}
+    @app.post('/{{ async_function.name }}')
+    async def {{ async_function.name }}(
+        {% for function_arg in async_function.input_args %}
+        {{function_arg.name}}: {{function_arg.type_name}},
+        {% endfor %}
     ):
-        result = await service.{{ function_name }}(request_model)
+        result = await service.{{ async_function.name }}({% for function_arg in async_function.input_args %}{{function_arg.name}},{% endfor %})
 
         return result.dict()
+    {% endfor %}

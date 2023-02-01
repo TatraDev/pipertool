@@ -8,6 +8,8 @@ from piper.utils import docker_utils
 from piper.base.executors import HTTPExecutor
 from piper.base.executors.utils import write_requirements, copy_piper, \
     copy_scripts, build_image, get_free_port, wait_for_fast_api_app_start
+from piper.base.rendering.meta import ExecutorMetaInfo, Function, FunctionArg
+
 
 import asyncio
 import inspect
@@ -84,12 +86,15 @@ class FastAPIExecutor(HTTPExecutor):
     def create_fast_api_files(self, path: str, **service_kwargs):
         cfg = get_configuration()
 
-        backend = render_fast_api_backend(service_class=self.__class__.__name__,
-                                          service_kwargs=dict(service_kwargs),
-                                          scripts=self.scripts(),
-                                          function_name=self.base_handler,
-                                          request_model="StringValue",
-                                          response_model="StringValue")
+        meta_info = ExecutorMetaInfo(
+            class_name=self.__class__.__name__,
+            init_kwargs=dict(service_kwargs),
+            scripts=self.scripts(),
+            async_functions=[Function(name=self.base_handler,
+                                      input_args=[FunctionArg("request_model", "StringValue")])]
+        )
+
+        backend = render_fast_api_backend(meta_info)
         with open(f"{path}/main.py", "w") as output:
             output.write(backend)
 
