@@ -1,12 +1,13 @@
+from piper.imports import safe_import
 from piper.base.executors import FastAPIExecutor
 from piper.services import StringValue, ListOfStringsObject
 
-from abc import abstractmethod
+with safe_import():
+    import torch
+    import requests
+    import PIL.Image
+    import clip
 
-import torch
-import requests
-import PIL.Image
-import clip
 
 def download_picture(url) -> PIL.Image.Image:
     return PIL.Image.open(requests.get(url, stream=True).raw)
